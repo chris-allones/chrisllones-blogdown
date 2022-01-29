@@ -41,8 +41,8 @@ superuser: true
 title: Christopher Llones
 ---
 
-I am a PhD student at the Faculty of Agricultural Technology in KMITL. My research interests include agricultural development and economics. I love doing doing data visualization and learning statistical programming using R.
+Currently, I am a Ph.D. student at the Faculty of Agricultural Technology in KMITL. My research interests include agricultural development and economics. Also, I love doing data visualization and learning statistical programming using R.
 
-I worked as a research assistant in the Visayas State University for two years. Afterward, I was employed as an instructor at the Department of Business and Management. My teaching experiences includes managerial economics, financial management for agrobusiness enterprises, and production economics.
+I worked as a research assistant at the Visayas State University for two years. Afterward, I was employed as an instructor at the Department of Business and Management. My teaching experiences include managerial economics, financial management for the agro-based enterprise, and production economics.
 
 {{< icon name="download" pack="fas" >}} Download my {{< staticref "uploads/resume.pdf" "newtab" >}}resumé{{< /staticref >}}.
