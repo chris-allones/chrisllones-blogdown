@@ -31,8 +31,8 @@ content:
     tag: Rstats
   - name: Data visualization
     tag: Dataviz
-  - name: Other
-    tag: Other
+  - name: Projects
+    tag: project
 
 design:
   # Choose how many columns the section has. Valid values: '1' or '2'.
