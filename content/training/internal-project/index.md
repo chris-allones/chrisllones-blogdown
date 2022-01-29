@@ -12,7 +12,7 @@ links:
 slides: example
 summary: An example of using the in-built project page.
 tags:
-- Deep Learning
+- Other
 title: Internal Project
 url_code: ""
 url_pdf: ""

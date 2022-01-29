@@ -9,14 +9,14 @@ headless: true
 # Order that this section appears on the page.
 weight: 30
 
-title: Recent Posts
+title: Recent blogs
 subtitle:
 
 content:
   # Filter on criteria
   filters:
     folders:
-      - post
+      - blog
     tag: ''
     category: ''
     publication_type: ''
