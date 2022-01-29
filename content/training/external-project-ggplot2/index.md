@@ -1,5 +1,5 @@
 ---
-date: "2022-02-28T00:00:00Z"
+date: "2022-01-28T00:00:00Z"
 external_link: https://chris-allones.github.io/R-trainings/data-viz-ggplot2/index.html
 image:
   caption: Photo by Chris Llones
