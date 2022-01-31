@@ -116,9 +116,9 @@ comments:
   commento:
     url: ''
   utterances:
-    src: "https://utteranc.es/client.js"
     repo: 'chris-allones/chrisllones-blogdown'
-    issue_term: 'pathname'
+    issue_term: 'title'
+    label: 'web page comment'
     theme: 'github-light'
 search:
   provider: wowchemy
