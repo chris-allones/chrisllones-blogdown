@@ -103,7 +103,7 @@ breadcrumb:
   page_types:
     book: true
 comments:
-  provider: ''
+  provider: 'utterances'
   commentable:
     post: true
     book: true
@@ -115,6 +115,11 @@ comments:
     show_count: true
   commento:
     url: ''
+  utterances:
+    repo: 'chris-allones/chrisllones-blogdown'
+    issuer_term: 'title'
+    theme: 'github-light'
+    label: 'comments :speech_balloon:'
 search:
   provider: wowchemy
   algolia:
