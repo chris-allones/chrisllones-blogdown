@@ -116,9 +116,9 @@ comments:
   commento:
     url: ''
   utterances:
-    repo: 'chris-allones/chrisllones-blogdown'
+    repo_name: 'chris-allones/chrisllones-blogdown'
     issue_term: 'title'
-    label: 'web page comment'
+    label: 'comments :speech_balloon:'
     theme: 'github-light'
 search:
   provider: wowchemy
