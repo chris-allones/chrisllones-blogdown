@@ -116,10 +116,10 @@ comments:
   commento:
     url: ''
   utterances:
+    src: "https://utteranc.es/client.js"
     repo: 'chris-allones/chrisllones-blogdown'
-    issue_term: 'title'
+    issue_term: 'pathname'
     theme: 'github-light'
-    label: 'comments :speech_balloon:'
 search:
   provider: wowchemy
   algolia:
