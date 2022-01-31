@@ -116,7 +116,7 @@ comments:
   commento:
     url: ''
   utterances:
-    src: 'https://utteranc.es/client.js'
+    source: 'https://utteranc.es/client.js'
     repo_name: 'chris-allones/chrisllones-blogdown'
     issue_term: 'pathname'
     label: 'comments :speech_balloon:'
