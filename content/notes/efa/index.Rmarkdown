@@ -1,0 +1,307 @@
+---
+title: "Exploratory Factor Analysis (EFA)"
+authors:
+- admin
+date: 2022-02-01T21:13:14-05:00
+output:
+  html_document:
+    highlight: textmate
+    toc: true
+    number_sections: true
+categories: ["R"]
+subtitle: Guide for doing an exploratory factor analysis (EFA) in R.
+summary: This is a guide for doing an exploratory factor analysis using R. The guide is intended as preparatory in doing confirmatory factor analysis.
+tags: ["EFA", "Exploratory", "Factor analysis"]
+---
+
+```{css, echo=FALSE}
+.scroll-200 {
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align = "center",
+                      out.width = "70%", 
+                      #class.output="scroll-200",
+                      comment = "")
+```
+
+# Table of contents
+
+[1. Objectives of factor analysis](#objectives)
+
+[2. Designing an EFA](#design)
+
+[3. Assumption in Exploratory factor analysis](#assumption)
+
+[4. Deriving factors](#deriving)
+
+[5. Assessing overall fit](#assessment)
+
+[6. Interpreting factors](#interpretation)
+
+***
+
+<br>
+
+# 1. Objectives of factor analysis <a name="objectives"></a>
+
+This EFA guide aims primarily on preparing researcher in doing confirmatory factor analysis (CFA) and the structural equation modelling (SEM). To better understand the relation of EFA with other factor analysis, consider the figure below.
+
+```{r echo=FALSE, out.width="50%"}
+knitr::include_graphics("materials/overview_factor.jpg")
+```
+
+
+
+
+# 2. Designing an EFA <a name="design"></a>
+
+
+# 3. Assumption in EFA <a name="assumption"></a>
+
+
+# 4. Deriving factors <a name="deriving"></a>
+
+
+# 5. Assessing overall fit <a name="assessment"></a>
+
+
+# 6. Interpreting factors <a name="interpretation"></a>
+
+
+
+**R-package and importing data**
+
+```{r packages, message=FALSE}
+#loading packages using `pacman`
+pacman::p_load(tidyverse, psych, lavaan,
+               haven, kableExtra, likert,
+               EFAtools)
+```
+
+```{r data, message=FALSE}
+
+#loading data
+data <- readRDS("social.rds")
+```
+
+# Descriptives
+
+## Common descriptive statistics
+
+Initially, we can understand the general characteristics of our data through basic descriptive of our measurement items. It is a good practice to start with a descriptive analysis to explore our data and inspect any possible errors. Any unusual or extreme values may indicate possible errors that need to be inspected. Table 1 shows the descriptive of the data we are going to use to demonstrate the analysis on structural equation modeling.
+
+Refer to the accompanying notes for the full details of each items.
+
+```{r descriptives-items}
+data %>% describe() %>% 
+     kable(caption = "Descriptives of the measurement items.",
+                  digits = 3) %>%
+     kable_classic(full_width = F, html_font = "Arial")
+```
+
+## Graphical inspection of the measurement items
+
+Mostly, farmers show high social capital in a bonding and bridging distinction wherein majority responded positively in social capital question items. Similar results is observed for collective action activities while roughly 50 percent for items in OM constructs.
+
+```{r grapical, message=FALSE, warning=FALSE, fig.cap="Farmer's responses on each question item."}
+data %>% as.data.frame() %>% 
+     likert(nlevels = 7) %>% 
+     plot()
+```
+
+# Exploratory Factor Analysis
+
+The critical assumptions underlying exploratory factor analysis are more conceptual than statistical. The concerns center as much on the character and composition of variable included in the analysis as on their statistical qualities. More on conceptual issues and statistical issues can be found in the accompanying notes.
+
+## Exploring possible factors
+
+Exploring possible factors refer to identifying the underlying structure of relationship. The decision must be made concerning;
+
+1.  The method of extracting the factors (CFA vs PCA), and;
+2.  The number of factors selected to represent the underlying structure in the data.
+
+In this guide, we already have a prior idea of the expected number of factors to be extracted before undertaking the factor analysis. However, we will use a scree test and parallel analysis to check if the number of underlying factors from the tests conforms with our expectation.
+
+Common to the tests demonstrated here follows the famous eigenvalues greater than 1. The rationale for this is that any individual factor should account for the variance of at least a single variable if it is to be retained for interpretation.
+
+Note that an eigenvalue is simply the sum of the squared loading (variance) of variables on that factor.
+
+Rule is, do not retain any factors which account for less variance than a single variable.
+
+### Test 1: Scree test
+
+The scree test is used to identify the optimum number of factors that can be extracted before the amount of unique variance begins to dominate the common variance structure. Refer to the accompanying notes for more details on unique and common variance.
+
+All factors contain at least some unique variance, while the proportion of unique varince is substantially higher in later factors.
+
+The plot is derived by plotting the latent roots against the number of factors in their order of extraction.
+
+The inflection point "elbow" - point at which the curve first begins to straighten out- is considered to represent factors containing more unique rather common variances and thus less suitable for retention.
+
+```{r scree-test}
+scree(data)
+```
+
+### Test 2: Parallel analysis
+
+The procedure generates a large number of simulated dataset with random values for the same number of variables and sample sizes. Then each of these simulated dataset is then factor analyzed, either with PCA and CFA and the eigenvalues are averaged for each factor across all the dataset. The results is the average eigenvalues for the first, second and so on across the set of simulated dataset. These values are then compared to the eigenvalues extracted for the original data. All factors with eigenvalues above those average eigenvalues are retained.
+
+The parallel analysis is not yet incorporated into the major statistical packages like SPSS.
+
+```{r parallel-analysis}
+fa.parallel(data, fm = "ml")
+```
+
+### Test 3: Kaiser-Guttman Criterion
+
+The criterion is also known as "eigenvalues greater than 1 rule". Hence, the test suggests how many factors to retain based on eigenvalues greater than 1.
+
+In the code, we predetermined the number of possible factors for exploratory factor analysis. The results recommends 3 factors to retained. The bonding and bridging construct reflect under social capital, the two factors may have been grouped in one resulting only to three recommended factors.
+
+```{r}
+KGC(x = data,
+    eigen_type = c("PCA", "EFA", "SMC"),
+    n_factors = 4)
+```
+
+## Assessing factorability
+
+### Test 1: Kaiser-Meyen-Olkin (KMO)
+
+An index ranges from 0 to 1, approaching 1 means each variable is perfectly predicted without error by other variables.
+
+It is a statistic indicating the proportion of variance in your variables that might be caused by underlying factor.
+
+Some guidelines:
+
+-   $\ge 0.90$ - marvelous
+-   $\ge 0.80$ - meritorious
+-   $\ge 0.70$ - middling
+-   $\ge 0.60$ - mediocre
+-   $\ge 0.50$ - miserable
+-   $< 0.50$ - unacceptable
+
+The MSA values may increase from the following:
+
+1.  sample size increases
+2.  the average correlation increases
+3.  the number of variable increases
+4.  the number of factor decreases
+
+If MSA falls below 0.50, then variable specific MSA values can identify variable for deletion to achieve an overall value of greater than 0.50 overall MSA value. May follow the following steps.
+
+1.  Identify the variables with lowest MSA subject for deletion then recalculate factor analysis.
+2.  Repeat the process until an MSA 0.50 and above is achieved.
+
+Purpose of elimination with MSA under 0.50 is that these variables' correlation with other variables are poorly representing the extracted factors.
+
+Often low MSA end up as a single variable on a factor result from their lack of association with any of the other variables. It means they are not correlated high enough with other variables in the analysis to be suitable for EFA.
+
+In the sample data, both the overall and individual MSA ranging from meritorious to marvelous.
+
+```{r}
+KMO(data)
+```
+
+### Test 2: Bartlett Test of Sphericity
+
+The test examines the entire correlation matrix. Test the hypothesis that correlation matrix is an identity matrix. It is a statistical test for the presence of correlation among the variables. Providing statistical significance indicating the correlation matrix has significant correlation among at least some of the variables.
+
+Increasing sample size causes the Bartlett test to become more sensitive in detecting correlation among the variables.
+
+We use the `BARTLETT()` function from `EFAtools` to conduct the test. A significant results signifies data are appropriate for factor analysis.
+
+```{r Bartlett}
+BARTLETT(x = data,
+         N = nrow(data))
+```
+
+## Extracting factor components
+
+The process of estimating factors and loadings involve the selection fo the principal component analysis versus the common factor. Principal component analysis (PCA) is used when the objective is to summarize the most of the original information (variance). It considers the total variance and derivatives factors that contain small proportions of unique variance and, in some instances, error variance. Whereas, common factor analysis is used primarily to identify underlying factors or dimensions that reflect what the variables share in common. It considers only the common or shared variance, assuming that both the unique and error variance are not of interest in defining the structure of the variables.
+
+The most important tool in interpreting the factor is 'factor rotation'. The ultimate effect of rotating the factor matrix is to redistribute the variance from earlier factors to later ones to achieve a simpler, theoretically more meaningful factor pattern. Factor rotation achieve a simpler and theoretically more meaningful factor solutions. In most cases rotation of the factors improves the interpretation by reducing some of the ambiguities that often accompany initial unrotated factor solutions. Categorically, rotation falls under orthogonal and oblique factor rotation.
+
+## Orthogonal Factor Rotation
+
+Orthogonal rotation are more frequently applied because the analytical procedure for performing oblique rotations are not as well developed and are still subject to some controversy.
+
+### Varimax
+
+The varimax is the mostly widely used orthogonal rotation method. The criterion centers on simplifying the columns of the factor matrix. It maximizes the sum of variance of required loadings of the factor matrix. Results are some high loadings (i.e., close to -1 or +1) along with some loadings near 0 in each column of the matrix. Closer to -1 or +1 indicating a clear positive or negative associations between variables and factors. Close to 0 indicate a clear lack of association. Varimax rotation often give a clear separation of factors.
+
+Using `pscyh` package and the previous tests on the factorability of the data, four factors were specified with varimax rotation. We added an argument `cor` to specify the type of method in extracting the correlation coefficient or factor loadings. Since the data are in a response scale, pearson correlation may be less suitable as it requires measurement to be continuous. Here we used a polychoric correlation to compute for the factor loading. The use of polychoric correlation permit the use of any combination of categorical and continuous indicator.
+
+```{r varimax}
+
+efa_varimax <- psych::fa(r = data,
+                         nfactors = 4, 
+                         rotate = "varimax",
+                         cor = "poly")
+
+# printing the results, excluding loadings less than 0.6
+print(efa_varimax$loadings, cutoff = 0.6)
+```
+
+### Quartimax
+
+Centers on simplifying rows of a factor matrix. Focuses on rotating the initial factors so that a variable loads high on one factor and as low as possible on all other factors. Many variables can load high or near high on the same factors because the technique centers on the simplifying the rows. Quartimax often does not proved successful in producing simpler structures.
+
+The quartimax identified bridging and bonding items under one construct. Although the results is higly likely since both bonding and bridging refers to social capital concept.
+
+```{r quartimax}
+efa_quartimax <- fa(r = data,
+                    nfactors = 4,
+                    rotate = "quartimax",
+                    cor = "poly")
+
+print(efa_quartimax$loadings, cutoff = 0.6)
+```
+
+### Equamax
+
+A compromise between varimax and quartimax. Rather concentrating on simplification of the rows or on simplification of the column, it tries to accomplish some of each. The equamax has bot gained widespread acceptance and is used infrequently.
+
+```{r equamax}
+efa_equamax <- fa(r = data,
+                    nfactors = 4,
+                    rotate = "equamax",
+                    cor = "poly")
+
+print(efa_equamax$loadings, cutoff = 0.6)
+```
+
+## Oblique rotation
+
+More flexible as this rotation need not to be orthogonal. Allow correlated factors instead of maintaining independence between the rotated factors. More realistic because theoretically important underlying dimension are not assumed to be uncorrelated with each other. Since in reality more or less variables has some degree of association. The promax and oblimin are the widely used rotation under oblique rotation. When statistical softwares were not used, promax provide easier manual computation than oblimin, however the used of computer eliminate this advantage of promax over oblimin. Today, oblimin are used more than promax although both provide quite the same output.
+
+In comparison with the sample data, oblimin provide better extraction based on the factor loadings.
+
+### Promax
+
+```{r promax}
+efa_promax <- fa(r = data,
+                    nfactors = 4,
+                    rotate = "promax",
+                    cor = "poly")
+
+print(efa_promax$loadings, cutoff = 0.6)
+
+```
+
+### Oblimin
+
+```{r oblimin}
+efa_oblimin <- fa(r = data,
+                    nfactors = 4,
+                    rotate = "oblimin",
+                    cor = "poly")
+
+print(efa_oblimin$loadings, cutoff = 0.6)
+```
+
