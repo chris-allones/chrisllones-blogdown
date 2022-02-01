@@ -6,8 +6,6 @@ date: 2022-02-01T21:13:14-05:00
 output:
   html_document:
     highlight: textmate
-    toc: true
-    number_sections: true
 categories: ["R"]
 subtitle: Guide for doing an exploratory factor analysis (EFA) in R.
 summary: This is a guide for doing an exploratory factor analysis using R. The guide is intended as preparatory in doing confirmatory factor analysis.
@@ -62,7 +60,7 @@ pacman::p_load(tidyverse, psych, lavaan,
                haven, kableExtra, likert,
                EFAtools)</code></pre>
 <pre class="r"><code>#loading data
-data &lt;- readRDS(&quot;social.rds&quot;)</code></pre>
+data &lt;- readRDS(&quot;materials/social.rds&quot;)</code></pre>
 </div>
 <div id="descriptives" class="section level1">
 <h1>Descriptives</h1>
