@@ -13,7 +13,7 @@ output:
 categories: ["R"]
 subtitle: Most popular dog breeds
 summary: In TidyTuesday Week 5, we will be making a bump chart on the top 10 most popular dog breed and level of openness to strangers. The data is from AKC registration statistics courtesy of KKakey.
-tags: ["TidyTuesday", "Week 4", "game board"]
+tags: ["TidyTuesday", "Week 5", "dog breed"]
 ---
 
 ```{r setup, include=FALSE}
