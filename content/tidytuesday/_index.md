@@ -4,5 +4,5 @@ header:
   caption: ""
   image: ""
 title: TidyTuesday
-view: 3
+view: 2
 ---
