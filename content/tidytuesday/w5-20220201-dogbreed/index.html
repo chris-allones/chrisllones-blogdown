@@ -1,0 +1,214 @@
+---
+title: 'TidyTueday week 5: dog breeds'
+authors:
+- admin
+date: 2022-02-01T21:13:14-05:00
+image:
+  caption: Bump chart
+  focal_point: Smart
+output:
+  html_document:
+    highlight: textmate
+    code_folding: hide
+categories: ["R"]
+subtitle: Most popular dog breeds
+summary: In TidyTuesday Week 5, we will be making a bump chart on the top 10 most popular dog breed and level of openness to strangers. The data is from AKC registration statistics courtesy of KKakey.
+tags: ["TidyTuesday", "Week 4", "game board"]
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+<script src="{{< blogdown/postref >}}index_files/htmlwidgets/htmlwidgets.js"></script>
+<script src="{{< blogdown/postref >}}index_files/plotly-binding/plotly.js"></script>
+<script src="{{< blogdown/postref >}}index_files/typedarray/typedarray.min.js"></script>
+<script src="{{< blogdown/postref >}}index_files/jquery/jquery.min.js"></script>
+<link href="{{< blogdown/postref >}}index_files/crosstalk/css/crosstalk.min.css" rel="stylesheet" />
+<script src="{{< blogdown/postref >}}index_files/crosstalk/js/crosstalk.min.js"></script>
+<link href="{{< blogdown/postref >}}index_files/plotly-htmlwidgets-css/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="{{< blogdown/postref >}}index_files/plotly-main/plotly-latest.min.js"></script>
+
+
+<div id="reading-data-and-wrangle" class="section level1">
+<h1>Reading data and wrangle</h1>
+<pre class="r"><code># import data from tidytuesdayR
+breed_traits &lt;- readr::read_csv(&#39;https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-02-01/breed_traits.csv&#39;)
+trait_description &lt;- readr::read_csv(&#39;https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-02-01/trait_description.csv&#39;)
+breed_rank_all &lt;- readr::read_csv(&#39;https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-02-01/breed_rank.csv&#39;) %&gt;% clean_names()
+
+
+breed_top_10 &lt;- 
+breed_rank_all %&gt;% 
+  pivot_longer(cols = -c(&quot;breed&quot;, &quot;links&quot;, &quot;image&quot;),
+               names_to = &quot;year&quot;,
+               values_to = &quot;rank&quot;) %&gt;% 
+  filter(rank &lt; 11) %&gt;% 
+  mutate(year = parse_number(year))</code></pre>
+</div>
+<div id="explore-data" class="section level1">
+<h1>Explore data</h1>
+<p>Looking at the <code>breed_traits</code> data, we can format the dataset in a long format where all traits are in one column and ratings in another. Also, we can rename the traits in a one-word description for easy navigation of different traits rated.</p>
+<pre class="r"><code># traits into long format
+traits &lt;- breed_traits %&gt;% 
+  select(
+    Breed,
+    Family=&#39;Affectionate With Family&#39;,
+    Children=&#39;Good With Young Children&#39;,
+    Dogs=&#39;Good With Other Dogs&#39;,
+    Shedding=&#39;Shedding Level&#39;,
+    Coat=&#39;Coat Grooming Frequency&#39;,
+    Drooling=&#39;Drooling Level&#39;,
+    Strangers=&#39;Openness To Strangers&#39;,
+    Watchdog=&#39;Watchdog/Protective Nature&#39;,
+    Adaptability=&#39;Adaptability Level&#39;,
+    Trainability=&#39;Trainability Level&#39;,
+    Energy=&#39;Energy Level&#39;,
+    Barking=&#39;Barking Level&#39;,
+    Mental=&#39;Mental Stimulation Needs&#39;,
+    Playfulness = &#39;Playfulness Level&#39; 
+    ) %&gt;% 
+  pivot_longer(cols = -Breed,
+               names_to = &quot;traits&quot;, 
+               values_to = &quot;rating&quot;) %&gt;% 
+  clean_names()
+
+traits</code></pre>
+<pre><code>## # A tibble: 2,730 x 3
+##    breed                 traits       rating
+##    &lt;chr&gt;                 &lt;chr&gt;         &lt;dbl&gt;
+##  1 Retrievers (Labrador) Family            5
+##  2 Retrievers (Labrador) Children          5
+##  3 Retrievers (Labrador) Dogs              5
+##  4 Retrievers (Labrador) Shedding          4
+##  5 Retrievers (Labrador) Coat              2
+##  6 Retrievers (Labrador) Drooling          2
+##  7 Retrievers (Labrador) Strangers         5
+##  8 Retrievers (Labrador) Watchdog          3
+##  9 Retrievers (Labrador) Adaptability      5
+## 10 Retrievers (Labrador) Trainability      5
+## # ... with 2,720 more rows</code></pre>
+<div id="what-is-the-averall-average-traits-rating-across-different-dog-breeds" class="section level2">
+<h2>What is the averall average traits rating across different dog breeds?</h2>
+<p>In a 1 to 5 level, overall traits rating across dog breeds ranges from 3 to 4.5.</p>
+<pre class="r"><code>traits %&gt;% 
+  group_by(breed) %&gt;% 
+  summarise(avg_rating = mean(rating, na.rm = TRUE)) %&gt;% 
+  ungroup() %&gt;% 
+  arrange(desc(avg_rating)) %&gt;% 
+  head(180) %&gt;%
+  ggplot(aes(avg_rating, breed, color = rev(avg_rating))) +
+  geom_point(size = 2, show.legend = FALSE) + 
+  geom_text(aes(label = breed), check_overlap = TRUE) +
+  scale_x_continuous(breaks = seq(2, 4.5, 0.5), limits = c(2, 4.5)) +
+  coord_cartesian(clip = &quot;off&quot;) +
+  theme(plot.margin = margin(rep(10, 4)),
+        panel.grid = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = &quot;none&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="100%" /></p>
+</div>
+<div id="what-are-the-top-dog-breeds-across-years" class="section level2">
+<h2>What are the top dog breeds across years</h2>
+<p>The Retriever (Labrador) has been consistently the most popular breed in the bar plot. While looking at a line plot across years, the french bulldog has a staggering increase in popularity.</p>
+<p>Using <code>plotly</code>, we can convert <code>ggplot</code> into an interactive plot. Then, we can hover over the plot and look at its information mapped.</p>
+<pre class="r"><code>breed_top_10 %&gt;% 
+  mutate(breed = reorder_within(breed, rank, year)) %&gt;%
+  ggplot(aes(rank, breed, fill = breed)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label = rank), nudge_x = 0.5) +
+  scale_y_reordered() +
+  facet_wrap(~ year, scales = &quot;free&quot;, ncol = 2) +
+  theme(axis.text.x = element_blank()) +
+  labs(x = &quot;&quot;,
+       y = &quot;&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="100%" /></p>
+<pre class="r"><code>gg_top_breed &lt;- 
+breed_top_10 %&gt;% 
+  group_by(year, breed) %&gt;% 
+  summarise(rank = mean(rank, na.rm = TRUE)) %&gt;% 
+  ungroup() %&gt;% 
+  ggplot(aes(x = year, rank, color = breed)) +
+  geom_line(size = 1) +
+  geom_point(size = 4) +
+  geom_text(data = breed_top_10 %&gt;% filter(year == 2020),
+            aes(label = breed), 
+            x = 2020 - 0.5, 
+            nudge_y = 0.2) +
+  scale_y_reverse(breaks = seq(0, 10, 1)) +
+  theme(legend.position = &quot;none&quot;)
+  
+ggplotly(gg_top_breed)</code></pre>
+<div id="htmlwidget-1" style="width:100%;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"data":[{"x":[2013,2014,2015,2016,2017,2018,2019,2020],"y":[-4,-5,-5,-5,-6,-6,-7,-7],"text":["year: 2013<br />rank:  4<br />breed: Beagles","year: 2014<br />rank:  5<br />breed: Beagles","year: 2015<br />rank:  5<br />breed: Beagles","year: 2016<br />rank:  5<br />breed: Beagles","year: 2017<br />rank:  6<br />breed: Beagles","year: 2018<br />rank:  6<br />breed: Beagles","year: 2019<br />rank:  7<br />breed: Beagles","year: 2020<br />rank:  7<br />breed: Beagles"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(248,118,109,1)","dash":"solid"},"hoveron":"points","name":"Beagles","legendgroup":"Beagles","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(248,118,109,1)"}},"frame":null},{"x":[2013,2014,2015,2016],"y":[-7,-8,-10,-10],"text":["year: 2013<br />rank:  7<br />breed: Boxers","year: 2014<br />rank:  8<br />breed: Boxers","year: 2015<br />rank: 10<br />breed: Boxers","year: 2016<br />rank: 10<br />breed: Boxers"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(225,138,0,1)","dash":"solid"},"hoveron":"points","name":"Boxers","legendgroup":"Boxers","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(225,138,0,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(225,138,0,1)"}},"frame":null},{"x":[2013,2014,2015,2016,2017,2018,2019,2020],"y":[-5,-4,-4,-4,-5,-5,-5,-5],"text":["year: 2013<br />rank:  5<br />breed: Bulldogs","year: 2014<br />rank:  4<br />breed: Bulldogs","year: 2015<br />rank:  4<br />breed: Bulldogs","year: 2016<br />rank:  4<br />breed: Bulldogs","year: 2017<br />rank:  5<br />breed: Bulldogs","year: 2018<br />rank:  5<br />breed: Bulldogs","year: 2019<br />rank:  5<br />breed: Bulldogs","year: 2020<br />rank:  5<br />breed: Bulldogs"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(190,156,0,1)","dash":"solid"},"hoveron":"points","name":"Bulldogs","legendgroup":"Bulldogs","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(190,156,0,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(190,156,0,1)"}},"frame":null},{"x":[2013,2020],"y":[-10,-10],"text":["year: 2013<br />rank: 10<br />breed: Dachshunds","year: 2020<br />rank: 10<br />breed: Dachshunds"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(140,171,0,1)","dash":"solid"},"hoveron":"points","name":"Dachshunds","legendgroup":"Dachshunds","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(140,171,0,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(140,171,0,1)"}},"frame":null},{"x":[2014,2015,2016,2017,2018,2019,2020],"y":[-9,-6,-6,-4,-4,-4,-2],"text":["year: 2014<br />rank:  9<br />breed: French Bulldogs","year: 2015<br />rank:  6<br />breed: French Bulldogs","year: 2016<br />rank:  6<br />breed: French Bulldogs","year: 2017<br />rank:  4<br />breed: French Bulldogs","year: 2018<br />rank:  4<br />breed: French Bulldogs","year: 2019<br />rank:  4<br />breed: French Bulldogs","year: 2020<br />rank:  2<br />breed: French Bulldogs"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(36,183,0,1)","dash":"solid"},"hoveron":"points","name":"French Bulldogs","legendgroup":"French Bulldogs","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(36,183,0,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(36,183,0,1)"}},"frame":null},{"x":[2013,2014,2015,2016,2017,2018,2019,2020],"y":[-2,-2,-2,-2,-2,-2,-2,-3],"text":["year: 2013<br />rank:  2<br />breed: German Shepherd Dogs","year: 2014<br />rank:  2<br />breed: German Shepherd Dogs","year: 2015<br />rank:  2<br />breed: German Shepherd Dogs","year: 2016<br />rank:  2<br />breed: German Shepherd Dogs","year: 2017<br />rank:  2<br />breed: German Shepherd Dogs","year: 2018<br />rank:  2<br />breed: German Shepherd Dogs","year: 2019<br />rank:  2<br />breed: German Shepherd Dogs","year: 2020<br />rank:  3<br />breed: German Shepherd Dogs"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(0,190,112,1)","dash":"solid"},"hoveron":"points","name":"German Shepherd Dogs","legendgroup":"German Shepherd Dogs","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(0,190,112,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,190,112,1)"}},"frame":null},{"x":[2019],"y":[-10],"text":"year: 2019<br />rank: 10<br />breed: Pembroke Welsh Corgis","type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(0,193,171,1)","dash":"solid"},"hoveron":"points","name":"Pembroke Welsh Corgis","legendgroup":"Pembroke Welsh Corgis","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(0,193,171,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,193,171,1)"}},"frame":null},{"x":[2017,2018,2019,2020],"y":[-10,-9,-9,-9],"text":["year: 2017<br />rank: 10<br />breed: Pointers (German Shorthaired)","year: 2018<br />rank:  9<br />breed: Pointers (German Shorthaired)","year: 2019<br />rank:  9<br />breed: Pointers (German Shorthaired)","year: 2020<br />rank:  9<br />breed: Pointers (German Shorthaired)"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(0,187,218,1)","dash":"solid"},"hoveron":"points","name":"Pointers (German Shorthaired)","legendgroup":"Pointers (German Shorthaired)","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(0,187,218,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,187,218,1)"}},"frame":null},{"x":[2013,2014,2015,2016,2017,2018,2019,2020],"y":[-8,-7,-8,-7,-7,-7,-6,-6],"text":["year: 2013<br />rank:  8<br />breed: Poodles","year: 2014<br />rank:  7<br />breed: Poodles","year: 2015<br />rank:  8<br />breed: Poodles","year: 2016<br />rank:  7<br />breed: Poodles","year: 2017<br />rank:  7<br />breed: Poodles","year: 2018<br />rank:  7<br />breed: Poodles","year: 2019<br />rank:  6<br />breed: Poodles","year: 2020<br />rank:  6<br />breed: Poodles"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(0,172,252,1)","dash":"solid"},"hoveron":"points","name":"Poodles","legendgroup":"Poodles","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(0,172,252,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,172,252,1)"}},"frame":null},{"x":[2013,2014,2015,2016,2017,2018,2019,2020],"y":[-3,-3,-3,-3,-3,-3,-3,-4],"text":["year: 2013<br />rank:  3<br />breed: Retrievers (Golden)","year: 2014<br />rank:  3<br />breed: Retrievers (Golden)","year: 2015<br />rank:  3<br />breed: Retrievers (Golden)","year: 2016<br />rank:  3<br />breed: Retrievers (Golden)","year: 2017<br />rank:  3<br />breed: Retrievers (Golden)","year: 2018<br />rank:  3<br />breed: Retrievers (Golden)","year: 2019<br />rank:  3<br />breed: Retrievers (Golden)","year: 2020<br />rank:  4<br />breed: Retrievers (Golden)"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(139,147,255,1)","dash":"solid"},"hoveron":"points","name":"Retrievers (Golden)","legendgroup":"Retrievers (Golden)","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(139,147,255,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(139,147,255,1)"}},"frame":null},{"x":[2013,2014,2015,2016,2017,2018,2019,2020],"y":[-1,-1,-1,-1,-1,-1,-1,-1],"text":["year: 2013<br />rank:  1<br />breed: Retrievers (Labrador)","year: 2014<br />rank:  1<br />breed: Retrievers (Labrador)","year: 2015<br />rank:  1<br />breed: Retrievers (Labrador)","year: 2016<br />rank:  1<br />breed: Retrievers (Labrador)","year: 2017<br />rank:  1<br />breed: Retrievers (Labrador)","year: 2018<br />rank:  1<br />breed: Retrievers (Labrador)","year: 2019<br />rank:  1<br />breed: Retrievers (Labrador)","year: 2020<br />rank:  1<br />breed: Retrievers (Labrador)"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(213,117,254,1)","dash":"solid"},"hoveron":"points","name":"Retrievers (Labrador)","legendgroup":"Retrievers (Labrador)","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(213,117,254,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(213,117,254,1)"}},"frame":null},{"x":[2013,2014,2015,2016,2017,2018,2019,2020],"y":[-9,-10,-9,-8,-8,-8,-8,-8],"text":["year: 2013<br />rank:  9<br />breed: Rottweilers","year: 2014<br />rank: 10<br />breed: Rottweilers","year: 2015<br />rank:  9<br />breed: Rottweilers","year: 2016<br />rank:  8<br />breed: Rottweilers","year: 2017<br />rank:  8<br />breed: Rottweilers","year: 2018<br />rank:  8<br />breed: Rottweilers","year: 2019<br />rank:  8<br />breed: Rottweilers","year: 2020<br />rank:  8<br />breed: Rottweilers"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(249,98,221,1)","dash":"solid"},"hoveron":"points","name":"Rottweilers","legendgroup":"Rottweilers","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(249,98,221,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(249,98,221,1)"}},"frame":null},{"x":[2013,2014,2015,2016,2017,2018],"y":[-6,-6,-7,-9,-9,-10],"text":["year: 2013<br />rank:  6<br />breed: Yorkshire Terriers","year: 2014<br />rank:  6<br />breed: Yorkshire Terriers","year: 2015<br />rank:  7<br />breed: Yorkshire Terriers","year: 2016<br />rank:  9<br />breed: Yorkshire Terriers","year: 2017<br />rank:  9<br />breed: Yorkshire Terriers","year: 2018<br />rank: 10<br />breed: Yorkshire Terriers"],"type":"scatter","mode":"lines+markers","line":{"width":3.77952755905512,"color":"rgba(255,101,172,1)","dash":"solid"},"hoveron":"points","name":"Yorkshire Terriers","legendgroup":"Yorkshire Terriers","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(255,101,172,1)","opacity":1,"size":15.1181102362205,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(255,101,172,1)"}},"frame":null},{"x":[2019.5],"y":[-6.8],"text":"Beagles","hovertext":"year: 2019.5<br />rank:  7<br />breed: Beagles<br />breed: Beagles","textfont":{"size":14.6645669291339,"color":"rgba(248,118,109,1)"},"type":"scatter","mode":"text","hoveron":"points","name":"Beagles","legendgroup":"Beagles","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2019.5],"y":[-4.8],"text":"Bulldogs","hovertext":"year: 2019.5<br />rank:  5<br />breed: Bulldogs<br />breed: Bulldogs","textfont":{"size":14.6645669291339,"color":"rgba(190,156,0,1)"},"type":"scatter","mode":"text","hoveron":"points","name":"Bulldogs","legendgroup":"Bulldogs","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2019.5],"y":[-9.8],"text":"Dachshunds","hovertext":"year: 2019.5<br />rank: 10<br />breed: Dachshunds<br />breed: Dachshunds","textfont":{"size":14.6645669291339,"color":"rgba(140,171,0,1)"},"type":"scatter","mode":"text","hoveron":"points","name":"Dachshunds","legendgroup":"Dachshunds","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2019.5],"y":[-1.8],"text":"French Bulldogs","hovertext":"year: 2019.5<br />rank:  2<br />breed: French Bulldogs<br />breed: French Bulldogs","textfont":{"size":14.6645669291339,"color":"rgba(36,183,0,1)"},"type":"scatter","mode":"text","hoveron":"points","name":"French Bulldogs","legendgroup":"French Bulldogs","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2019.5],"y":[-2.8],"text":"German Shepherd Dogs","hovertext":"year: 2019.5<br />rank:  3<br />breed: German Shepherd Dogs<br />breed: German Shepherd Dogs","textfont":{"size":14.6645669291339,"color":"rgba(0,190,112,1)"},"type":"scatter","mode":"text","hoveron":"points","name":"German Shepherd Dogs","legendgroup":"German Shepherd Dogs","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2019.5],"y":[-8.8],"text":"Pointers (German Shorthaired)","hovertext":"year: 2019.5<br />rank:  9<br />breed: Pointers (German Shorthaired)<br />breed: Pointers (German Shorthaired)","textfont":{"size":14.6645669291339,"color":"rgba(0,187,218,1)"},"type":"scatter","mode":"text","hoveron":"points","name":"Pointers (German Shorthaired)","legendgroup":"Pointers (German Shorthaired)","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2019.5],"y":[-5.8],"text":"Poodles","hovertext":"year: 2019.5<br />rank:  6<br />breed: Poodles<br />breed: Poodles","textfont":{"size":14.6645669291339,"color":"rgba(0,172,252,1)"},"type":"scatter","mode":"text","hoveron":"points","name":"Poodles","legendgroup":"Poodles","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2019.5],"y":[-3.8],"text":"Retrievers (Golden)","hovertext":"year: 2019.5<br />rank:  4<br />breed: Retrievers (Golden)<br />breed: Retrievers (Golden)","textfont":{"size":14.6645669291339,"color":"rgba(139,147,255,1)"},"type":"scatter","mode":"text","hoveron":"points","name":"Retrievers (Golden)","legendgroup":"Retrievers (Golden)","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2019.5],"y":[-0.8],"text":"Retrievers (Labrador)","hovertext":"year: 2019.5<br />rank:  1<br />breed: Retrievers (Labrador)<br />breed: Retrievers (Labrador)","textfont":{"size":14.6645669291339,"color":"rgba(213,117,254,1)"},"type":"scatter","mode":"text","hoveron":"points","name":"Retrievers (Labrador)","legendgroup":"Retrievers (Labrador)","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2019.5],"y":[-7.8],"text":"Rottweilers","hovertext":"year: 2019.5<br />rank:  8<br />breed: Rottweilers<br />breed: Rottweilers","textfont":{"size":14.6645669291339,"color":"rgba(249,98,221,1)"},"type":"scatter","mode":"text","hoveron":"points","name":"Rottweilers","legendgroup":"Rottweilers","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":26.2283105022831,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[2012.65,2020.35],"tickmode":"array","ticktext":["2014","2016","2018","2020"],"tickvals":[2014,2016,2018,2020],"categoryorder":"array","categoryarray":["2014","2016","2018","2020"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.65296803652968,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176,"zeroline":false,"anchor":"y","title":{"text":"year","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-10.46,-0.34],"tickmode":"array","ticktext":["1","2","3","4","5","6","7","8","9","10"],"tickvals":[-1,-2,-3,-4,-5,-6,-7,-8,-9,-10],"categoryorder":"array","categoryarray":["1","2","3","4","5","6","7","8","9","10"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.65296803652968,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176,"zeroline":false,"anchor":"x","title":{"text":"rank","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"1ed83402479":{"x":{},"y":{},"colour":{},"type":"scatter"},"1ed848d936c5":{"x":{},"y":{},"colour":{}},"1ed837717820":{"x":{},"y":{},"colour":{},"label":{}}},"cur_data":"1ed83402479","visdat":{"1ed83402479":["function (y) ","x"],"1ed848d936c5":["function (y) ","x"],"1ed837717820":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="final-plot" class="section level1">
+<h1>Final plot</h1>
+<p>We will try to make a bump plot for the final plot to see how ranks among the most popular dogs change over the years.</p>
+<pre class="r"><code># Data wrangling
+ope_stranger_dogs &lt;- traits %&gt;% 
+  filter(traits == &quot;Strangers&quot;) %&gt;% 
+  group_by(breed) %&gt;% 
+  summarise(rating = mean(rating, na.rm = TRUE)) %&gt;% 
+  ungroup() %&gt;% 
+  mutate(breed = str_trim(breed, side = &quot;both&quot;))
+
+top_ranking_dog &lt;- breed_top_10 %&gt;% count(breed)
+
+dog_rank_stranger &lt;- top_ranking_dog %&gt;% 
+  left_join(ope_stranger_dogs, by = &quot;breed&quot;) %&gt;% 
+  mutate(rating = case_when(breed == &quot;French Bulldogs&quot; ~ 5,
+                            breed == &quot;German Shepherd Dogs&quot; ~ 3,
+                            breed == &quot;Pembroke Welsh Corgis&quot; ~ 4,
+                            breed == &quot;Pointers (German Shorthaired)&quot; ~ 4,
+                            breed == &quot;Retrievers (Golden)&quot; ~ 5,
+                            breed == &quot;Retrievers (Labrador)&quot; ~ 5,
+                            breed == &quot;Yorkshire Terriers&quot; ~ 5,
+                            TRUE ~ rating)) %&gt;% 
+  select(-n)</code></pre>
+<pre class="r"><code>#fonts
+sysfonts::font_add_google(&quot;Oswald&quot;, &quot;oswald&quot;)
+sysfonts::font_add_google(&quot;Arimo&quot;, &quot;arimo&quot;)
+showtext::showtext_auto()</code></pre>
+<pre class="r"><code>breed_top_10 %&gt;% 
+  left_join(dog_rank_stranger, by = &quot;breed&quot;) %&gt;% 
+  ggplot(aes(year, rank)) +
+  geom_bump(aes(group = breed, color = factor(rating)), 
+            size = 10, 
+            smooth = 5,
+            alpha = 0.7) +
+  scale_color_manual(&quot;Openness to strangers level (1-5)&quot;,
+                     values=c(&quot;3&quot; = &quot;#ef233c&quot;,
+                              &quot;4&quot; = &quot;#fb8500&quot;,
+                              &quot;5&quot; = &quot;#184e77&quot;),
+                     aesthetics = c(&quot;color&quot;, &quot;fill&quot;)) +
+  scale_y_reverse() +
+  scale_x_continuous(breaks = seq(2013, 2020, 1))  +
+  geom_text(data = breed_top_10 %&gt;% filter(year == 2018, rank %in% c(1, 2, 3, 4, 5, 6, 7, 8)),
+            aes(label = breed), family = &quot;oswald&quot;, size = 5.5, color = &quot;#f5f3f4&quot;) +
+  geom_text(data = breed_top_10 %&gt;% filter(year == 2019, !rank %in% c(1, 2, 3, 4, 5, 6, 7, 8)),
+            aes(label = breed), family = &quot;oswald&quot;, size = 5.5, color = &quot;#f5f3f4&quot;) +
+  theme_void() +
+  theme(plot.margin = margin(rep(15, 4)),
+        plot.title = element_text(size = 24, family = &quot;arimo&quot;, color = &quot;#3d405b&quot;, face = &quot;bold&quot;),
+        plot.subtitle = element_text(size = 18, color = &quot;#3d405b&quot;, margin = margin(b = 20, t = 10)),
+        plot.caption = element_text(size = 12, color = &quot;#3d405b&quot;, margin = margin(t = 10)),
+        panel.grid = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 12, face = &quot;bold&quot;),
+        legend.position = &quot;none&quot;,
+        # legend.justification = &quot;left&quot;,
+        # legend.box.margin = margin(t=2, b=-2),
+        # legend.text = element_text(size = 16, color = &quot;#3d405b&quot;),
+        # legend.title = element_text(size = 16, color = &quot;#3d405b&quot;)
+        ) +
+  labs(x = &quot;&quot;,
+       y = &quot;&quot;,
+       title = &quot;Top 10 most popular dog breed and level of openness to strangers&quot;,
+       subtitle = &quot;Popularity of dog breeds by AKC registration statistics&quot;,
+       caption = &quot;#TidyTuesday week 5\n Data source: AKC courtecy of KKakey | @Topenomics&quot;) +
+  geom_image(data = breed_top_10 %&gt;% filter(year == min(year)),
+           aes(image = image, x = year - 0.4), asp = 2) +
+  geom_image(data = breed_top_10 %&gt;% filter(year == max(year)),
+             aes(image = image, x = year + 0.4), asp = 2)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-8-1.png" width="100%" /></p>
+</div>
