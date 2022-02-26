@@ -37,7 +37,7 @@ data <- readRDS("materials/social.rds")
 ```
 
 
-# Table of contents
+# Contents
 
 [1. Objectives of factor analysis](#objectives)
 
@@ -56,6 +56,8 @@ data <- readRDS("materials/social.rds")
 <br>
 
 # 1. Objectives of factor analysis <a name="objectives"></a>
+
+<br>
 
 ```{r echo=FALSE, out.width="50%"}
 knitr::include_graphics("materials/overview_factor.jpg")
@@ -244,7 +246,7 @@ scree(data)
 ```
 
 
-**Test 2: Parallel analysis**
+**Parallel analysis**
 
 The procedure generates a large number of simulated dataset with random values for the same number of variables and sample sizes. Then each of these simulated dataset is then factor analyzed, either with PCA and CFA and the eigenvalues are averaged for each factor across all the dataset. The results is the average eigenvalues for the first, second and so on across the set of simulated dataset. These values are then compared to the eigenvalues extracted for the original data. All factors with eigenvalues above those average eigenvalues are retained.
 

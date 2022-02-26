@@ -22,8 +22,8 @@ tags: ["EFA", "Exploratory", "Factor analysis"]
   background-color: inherit;
 }
 </style>
-<div id="table-of-contents" class="section level1">
-<h1>Table of contents</h1>
+<div id="contents" class="section level1">
+<h1>Contents</h1>
 <p><a href="#objectives">1. Objectives of factor analysis</a></p>
 <p><a href="#design">2. Designing an EFA</a></p>
 <p><a href="#assumption">3. Assumption in Exploratory factor analysis</a></p>
@@ -35,6 +35,7 @@ tags: ["EFA", "Exploratory", "Factor analysis"]
 </div>
 <div id="objectives-of-factor-analysis" class="section level1">
 <h1>1. Objectives of factor analysis <a name="objectives"></a></h1>
+<p><br></p>
 <p><img src="materials/overview_factor.jpg" width="50%" style="display: block; margin: auto;" /></p>
 <p>This EFA guide aims primarily on preparing researcher in doing confirmatory factor analysis (CFA) and the structural equation modelling (SEM). To better understand the relation of EFA with other factor analysis, consider the figure above. The basic assumption of factor analysis is that for a collection of observed variables there are set of underlying variables called factors that can explain the interrelationship among variables.</p>
 <p>The primary purpose of EFA is to define the underlying structure among the variables. Researchers consider the method as an exploratory approach useful in searching for structure among a set of variable or as a data reduction method.</p>
@@ -169,7 +170,7 @@ bridging1 bridging2 bridging3  bonding1  bonding2  bonding3  bonding4       ca1
 <p>The inflection point “elbow” - point at which the curve first begins to straighten out- is considered to represent factors containing more unique rather common variances and thus less suitable for retention.</p>
 <pre class="r"><code>scree(data)</code></pre>
 <p><img src="{{< blogdown/postref >}}index_files/figure-html/scree-test-1.png" width="70%" style="display: block; margin: auto;" /></p>
-<p><strong>Test 2: Parallel analysis</strong></p>
+<p><strong>Parallel analysis</strong></p>
 <p>The procedure generates a large number of simulated dataset with random values for the same number of variables and sample sizes. Then each of these simulated dataset is then factor analyzed, either with PCA and CFA and the eigenvalues are averaged for each factor across all the dataset. The results is the average eigenvalues for the first, second and so on across the set of simulated dataset. These values are then compared to the eigenvalues extracted for the original data. All factors with eigenvalues above those average eigenvalues are retained.</p>
 <p>The parallel analysis is not yet incorporated into the major statistical packages like SPSS.</p>
 <pre class="r"><code>fa.parallel(data, fm = &quot;ml&quot;)</code></pre>
