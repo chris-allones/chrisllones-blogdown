@@ -89,7 +89,7 @@ tags: ["EFA", "Exploratory", "Factor analysis"]
 <p><strong>Statistical issues</strong></p>
 <p>Departures from normality, homoscedasticity, and linearity apply only to the extent that they diminish the observed correlation. Some degree of multicollinearity is desirable because objective is to identify interrelated sets of variables.</p>
 <div id="overall-measurement-of-intercorrelation" class="section level2">
-<h2>Overall measurement of intercorrelation</h2>
+<h2>3.1 Overall measurement of intercorrelation</h2>
 <p>The researcher must ensure that the data matrix has sufficient correlation to justify the application of EFA. There are two tests commonly used in assessing factorability, the KMO and Bartlett test.</p>
 <p><strong>Bartlett test</strong></p>
 <p>The test examines the entire correlation matrix. Test the hypothesis that correlation matrix is an identity matrix. It is a statistical test for the presence of correlation among the variables. Providing statistical significance indicating the correlation matrix has significant correlation among at least some of the variables.</p>
@@ -197,13 +197,10 @@ Eigenvalues were found using PCA, EFA, and SMC.
 </div>
 <div id="assessing-overall-fit" class="section level1">
 <h1>5. Assessing overall fit <a name="assessment"></a></h1>
-<div id="extracting-factor-components" class="section level2">
-<h2>Extracting factor components</h2>
 <p>The process of estimating factors and loadings involve the selection fo the principal component analysis versus the common factor. Principal component analysis (PCA) is used when the objective is to summarize the most of the original information (variance). It considers the total variance and derivatives factors that contain small proportions of unique variance and, in some instances, error variance. Whereas, common factor analysis is used primarily to identify underlying factors or dimensions that reflect what the variables share in common. It considers only the common or shared variance, assuming that both the unique and error variance are not of interest in defining the structure of the variables.</p>
 <p>The most important tool in interpreting the factor is ‘factor rotation’. The ultimate effect of rotating the factor matrix is to redistribute the variance from earlier factors to later ones to achieve a simpler, theoretically more meaningful factor pattern. Factor rotation achieve a simpler and theoretically more meaningful factor solutions. In most cases rotation of the factors improves the interpretation by reducing some of the ambiguities that often accompany initial unrotated factor solutions. Categorically, rotation falls under orthogonal and oblique factor rotation.</p>
-</div>
 <div id="orthogonal-factor-rotation" class="section level2">
-<h2>Orthogonal Factor Rotation</h2>
+<h2>5.1 Orthogonal Factor Rotation</h2>
 <p>Orthogonal rotation are more frequently applied because the analytical procedure for performing oblique rotations are not as well developed and are still subject to some controversy.</p>
 <p><strong>Varimax</strong></p>
 <p>The varimax is the mostly widely used orthogonal rotation method. The criterion centers on simplifying the columns of the factor matrix. It maximizes the sum of variance of required loadings of the factor matrix. Results are some high loadings (i.e., close to -1 or +1) along with some loadings near 0 in each column of the matrix. Closer to -1 or +1 indicating a clear positive or negative associations between variables and factors. Close to 0 indicate a clear lack of association. Varimax rotation often give a clear separation of factors.</p>
@@ -301,11 +298,12 @@ om4       0.787
 SS loadings    3.018 2.788 2.767 2.726
 Proportion Var 0.201 0.186 0.184 0.182
 Cumulative Var 0.201 0.387 0.572 0.753</code></pre>
-<p><strong>Oblique rotation</strong></p>
+</div>
+<div id="oblique-rotation" class="section level2">
+<h2>5.2 Oblique rotation</h2>
 <p>More flexible as this rotation need not to be orthogonal. Allow correlated factors instead of maintaining independence between the rotated factors. More realistic because theoretically important underlying dimension are not assumed to be uncorrelated with each other. Since in reality more or less variables has some degree of association. The promax and oblimin are the widely used rotation under oblique rotation. When statistical softwares were not used, promax provide easier manual computation than oblimin, however the used of computer eliminate this advantage of promax over oblimin. Today, oblimin are used more than promax although both provide quite the same output.</p>
 <p>In comparison with the sample data, oblimin provide better extraction based on the factor loadings.</p>
-<div id="promax" class="section level3">
-<h3>Promax</h3>
+<p><strong>Promax</strong></p>
 <pre class="r"><code>efa_promax &lt;- fa(r = data,
                     nfactors = 4,
                     rotate = &quot;promax&quot;,
@@ -368,7 +366,6 @@ Cumulative Var 0.196 0.377 0.557 0.714</code></pre>
 <p><br></p>
 <hr />
 <p><br></p>
-</div>
 </div>
 </div>
 <div id="interpreting-factors" class="section level1">
