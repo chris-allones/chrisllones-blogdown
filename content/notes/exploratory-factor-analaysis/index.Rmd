@@ -25,7 +25,17 @@ knitr::opts_chunk$set(fig.align = "center",
                       out.width = "70%", 
                       #class.output="scroll-200",
                       comment = "")
+
+#loading packages using `pacman`
+pacman::p_load(tidyverse, psych, lavaan,
+               haven, kableExtra, likert,
+               EFAtools)
+
+#loading data
+data <- readRDS("materials/social.rds")
+                
 ```
+
 
 # Table of contents
 
@@ -47,129 +57,120 @@ knitr::opts_chunk$set(fig.align = "center",
 
 # 1. Objectives of factor analysis <a name="objectives"></a>
 
-This EFA guide aims primarily on preparing researcher in doing confirmatory factor analysis (CFA) and the structural equation modelling (SEM). To better understand the relation of EFA with other factor analysis, consider the figure below.
-
 ```{r echo=FALSE, out.width="50%"}
 knitr::include_graphics("materials/overview_factor.jpg")
 ```
 
 
+This EFA guide aims primarily on preparing researcher in doing confirmatory factor analysis (CFA) and the structural equation modelling (SEM). To better understand the relation of EFA with other factor analysis, consider the figure above. The basic assumption of factor analysis is that for a collection of observed variables there are set of underlying variables called factors that can explain the interrelationship among variables.
+
+The primary purpose of EFA is to define the underlying structure among the variables. Researchers consider the method as an exploratory approach useful in searching for structure among a set of variable or as a data reduction method.
+
+Basically the general purpose is to find a way to condense or summarize the information contained in a number of original variables into a smaller set of new, composite dimensions or factors with a minimum loss of information.
+
+EFA focuses on four issues:
+
+**1. Specifying the unit analysis**
+
+A researcher should first decide the unit of analysis, is it variable or cases. If the objective is to summarize characteristics or variables, a factor analysis is appropriate. A factor analysis is applied to a correlation matrix of the variables to identify the dimensions for the variables that are latent.
+
+If the objective is to summarize cases (e.g., respondents), a cluster analysis for example would be the possible method. It is a factor analysis applied to a correlation matrix of the individual cases based on their characteristics.
+
+
+**2. Data summarization or reduction**
+
+In EFA, all variables are simultaneously considered without distinction as to dependent or independent variables. Most researchers use data summarization to group of variables and then do data reduction to identify representative variables from those grouped variables.
+
+**Summarization**
+
+- Individual variables are grouped and then viewed not what they represent individually, but for what they represent collectively in expressing a concept.
+
+- The goal is to define a small number of factors that adequately represent the original set of variables.
+
+
+**Reduction**
+
+- The main purpose is to retain the nature and character of the original variables but reduce the number of actual values included in the analysis.
+
+**3. Variable selection**
+
+In both uses - summarization and reduction, the researcher should specify the potential dimension that can be identified through the character and nature of variable subjecting for factor analysis.
+
+Researcher should use judgement on which set of variables to be analyze together. Since factor could always be produced, this can be potential for "garbage in, garbage out". If researcher indiscriminately includes larger number and just rely factor analysis will figure it out, the possibility of poor results is high. The quality of and meaning of the derived factors should reflect the conceptual underpinnings.
+
+**4. Using factor analysis with other multivariate techniques**
+
+A high correlation among independent variable for example, are excellent reason for performing data reduction. A variable may have little incremental predictive power if the variable is highly correlated with other explanatory variable in the model. Although it does not mean that the other variable of the factor are less important or have less impact, but instead their effect is already represented by the included variable from the factor.
+
+<br>
+
+***
+
+<br>
 
 
 # 2. Designing an EFA <a name="design"></a>
 
+According to Hair et al. (2018), the design of EFA involves the following basic decisions:
+
+**1. Variable selections and measurement issues**
+
+So, what type of variables can be used in factor analysis?
+
+- Primarily a correlation value can be calculated among all variables.
+
+- Metric variables are more easily measured by several types of correlation.
+
+- Non-metric variables are more challenging. The use of dummy variables such as Boolean factor analysis can be use.
+
+
+**2. Sample size**
+
+Generally researcher would not factor analyze a sample fewer than 50 observations, could be 100 or larger. While other suggested large sample of 2000 and larger as the number of variables and expected number of factor increases.
+
+Another criterion is the ratio of cases to variables, the general rule is to have a minimum of five times as many observations as the number of variables to be analyzed. More acceptable would be a 10:1 ratio, while other proposes 20 cases for each variables.
+
+<br>
+
+***
+
+<br>
+
 
 # 3. Assumption in EFA <a name="assumption"></a>
 
+The critical assumptions underlying exploratory factor analysis are more conceptual than statistical. The concerns center as much on the character and composition of variable included in the analysis as on their statistical qualities. 
 
-# 4. Deriving factors <a name="deriving"></a>
+**Conceptual issues**
+
+The technique has no means of determining appropriateness other than the correlations among variables. It is the responsibility of the researcher to ensure that the observed patterns are conceptually valid and appropriate to study.
+
+The researcher must ensure the sample is homogenous with respect to the underlying factor structure. If there would be groups that are expected to have different items measuring the concept, seperate EFA should be performed.
+
+**Statistical issues**
+
+Departures from normality, homoscedasticity, and linearity apply only to the extent that they diminish the observed correlation. Some degree of multicollinearity is desirable because objective is to identify interrelated sets of variables.
 
 
-# 5. Assessing overall fit <a name="assessment"></a>
+## Overall measurement of intercorrelation
 
+The researcher must ensure that the data matrix has sufficient correlation to justify the application of EFA. There are two tests commonly used in assessing factorability, the KMO and Bartlett test.
 
-# 6. Interpreting factors <a name="interpretation"></a>
+**Bartlett test**
 
+The test examines the entire correlation matrix. Test the hypothesis that correlation matrix is an identity matrix. It is a statistical test for the presence of correlation among the variables. Providing statistical significance indicating the correlation matrix has significant correlation among at least some of the variables.
 
+Increasing sample size causes the Bartlett test to become more sensitive in detecting correlation among the variables.
 
-**R-package and importing data**
+We use the `BARTLETT()` function from `EFAtools` to conduct the test. A significant results signifies data are appropriate for factor analysis.
 
-```{r packages, message=FALSE}
-#loading packages using `pacman`
-pacman::p_load(tidyverse, psych, lavaan,
-               haven, kableExtra, likert,
-               EFAtools)
+```{r Bartlett}
+BARTLETT(x = data,
+         N = nrow(data))
 ```
 
-```{r data, message=FALSE}
 
-#loading data
-data <- readRDS("materials/social.rds")
-```
-
-# Descriptives
-
-## Common descriptive statistics
-
-Initially, we can understand the general characteristics of our data through basic descriptive of our measurement items. It is a good practice to start with a descriptive analysis to explore our data and inspect any possible errors. Any unusual or extreme values may indicate possible errors that need to be inspected. Table 1 shows the descriptive of the data we are going to use to demonstrate the analysis on structural equation modeling.
-
-Refer to the accompanying notes for the full details of each items.
-
-```{r descriptives-items}
-data %>% describe() %>% 
-     kable(caption = "Descriptives of the measurement items.",
-                  digits = 3) %>%
-     kable_classic(full_width = F, html_font = "Arial")
-```
-
-## Graphical inspection of the measurement items
-
-Mostly, farmers show high social capital in a bonding and bridging distinction wherein majority responded positively in social capital question items. Similar results is observed for collective action activities while roughly 50 percent for items in OM constructs.
-
-```{r grapical, message=FALSE, warning=FALSE, fig.cap="Farmer's responses on each question item."}
-data %>% as.data.frame() %>% 
-     likert(nlevels = 7) %>% 
-     plot()
-```
-
-# Exploratory Factor Analysis
-
-The critical assumptions underlying exploratory factor analysis are more conceptual than statistical. The concerns center as much on the character and composition of variable included in the analysis as on their statistical qualities. More on conceptual issues and statistical issues can be found in the accompanying notes.
-
-## Exploring possible factors
-
-Exploring possible factors refer to identifying the underlying structure of relationship. The decision must be made concerning;
-
-1.  The method of extracting the factors (CFA vs PCA), and;
-2.  The number of factors selected to represent the underlying structure in the data.
-
-In this guide, we already have a prior idea of the expected number of factors to be extracted before undertaking the factor analysis. However, we will use a scree test and parallel analysis to check if the number of underlying factors from the tests conforms with our expectation.
-
-Common to the tests demonstrated here follows the famous eigenvalues greater than 1. The rationale for this is that any individual factor should account for the variance of at least a single variable if it is to be retained for interpretation.
-
-Note that an eigenvalue is simply the sum of the squared loading (variance) of variables on that factor.
-
-Rule is, do not retain any factors which account for less variance than a single variable.
-
-### Test 1: Scree test
-
-The scree test is used to identify the optimum number of factors that can be extracted before the amount of unique variance begins to dominate the common variance structure. Refer to the accompanying notes for more details on unique and common variance.
-
-All factors contain at least some unique variance, while the proportion of unique varince is substantially higher in later factors.
-
-The plot is derived by plotting the latent roots against the number of factors in their order of extraction.
-
-The inflection point "elbow" - point at which the curve first begins to straighten out- is considered to represent factors containing more unique rather common variances and thus less suitable for retention.
-
-```{r scree-test}
-scree(data)
-```
-
-### Test 2: Parallel analysis
-
-The procedure generates a large number of simulated dataset with random values for the same number of variables and sample sizes. Then each of these simulated dataset is then factor analyzed, either with PCA and CFA and the eigenvalues are averaged for each factor across all the dataset. The results is the average eigenvalues for the first, second and so on across the set of simulated dataset. These values are then compared to the eigenvalues extracted for the original data. All factors with eigenvalues above those average eigenvalues are retained.
-
-The parallel analysis is not yet incorporated into the major statistical packages like SPSS.
-
-```{r parallel-analysis}
-fa.parallel(data, fm = "ml")
-```
-
-### Test 3: Kaiser-Guttman Criterion
-
-The criterion is also known as "eigenvalues greater than 1 rule". Hence, the test suggests how many factors to retain based on eigenvalues greater than 1.
-
-In the code, we predetermined the number of possible factors for exploratory factor analysis. The results recommends 3 factors to retained. The bonding and bridging construct reflect under social capital, the two factors may have been grouped in one resulting only to three recommended factors.
-
-```{r}
-KGC(x = data,
-    eigen_type = c("PCA", "EFA", "SMC"),
-    n_factors = 4)
-```
-
-## Assessing factorability
-
-### Test 1: Kaiser-Meyen-Olkin (KMO)
+**Kaiser-Meyen-Olkin (KMO)**
 
 An index ranges from 0 to 1, approaching 1 means each variable is perfectly predicted without error by other variables.
 
@@ -177,12 +178,12 @@ It is a statistic indicating the proportion of variance in your variables that m
 
 Some guidelines:
 
--   $\ge 0.90$ - marvelous
--   $\ge 0.80$ - meritorious
--   $\ge 0.70$ - middling
--   $\ge 0.60$ - mediocre
--   $\ge 0.50$ - miserable
--   $< 0.50$ - unacceptable
+- $\ge 0.90$ - marvelous
+- $\ge 0.80$ - meritorious
+- $\ge 0.70$ - middling
+- $\ge 0.60$ - mediocre
+- $\ge 0.50$ - miserable
+- $< 0.50$ - unacceptable
 
 The MSA values may increase from the following:
 
@@ -206,18 +207,74 @@ In the sample data, both the overall and individual MSA ranging from meritorious
 KMO(data)
 ```
 
-### Test 2: Bartlett Test of Sphericity
+<br>
 
-The test examines the entire correlation matrix. Test the hypothesis that correlation matrix is an identity matrix. It is a statistical test for the presence of correlation among the variables. Providing statistical significance indicating the correlation matrix has significant correlation among at least some of the variables.
+***
 
-Increasing sample size causes the Bartlett test to become more sensitive in detecting correlation among the variables.
+<br>
 
-We use the `BARTLETT()` function from `EFAtools` to conduct the test. A significant results signifies data are appropriate for factor analysis.
+# 4. Deriving factors <a name="deriving"></a>
 
-```{r Bartlett}
-BARTLETT(x = data,
-         N = nrow(data))
+Exploring possible factors refer to identifying the underlying structure of relationship. The decision must be made concerning;
+
+1.  The method of extracting the factors (CFA vs PCA), and;
+2.  The number of factors selected to represent the underlying structure in the data.
+
+In this guide, we already have a prior idea of the expected number of factors to be extracted before undertaking the factor analysis. However, we will use a scree test and parallel analysis to check if the number of underlying factors from the tests conforms with our expectation.
+
+Common to the tests demonstrated here follows the famous eigenvalues greater than 1. The rationale for this is that any individual factor should account for the variance of at least a single variable if it is to be retained for interpretation.
+
+Note that an eigenvalue is simply the sum of the squared loading (variance) of variables on that factor.
+
+Rule is, do not retain any factors which account for less variance than a single variable.
+
+
+**Scree test**
+
+The scree test is used to identify the optimum number of factors that can be extracted before the amount of unique variance begins to dominate the common variance structure. Refer to the accompanying notes for more details on unique and common variance.
+
+All factors contain at least some unique variance, while the proportion of unique varince is substantially higher in later factors.
+
+The plot is derived by plotting the latent roots against the number of factors in their order of extraction.
+
+The inflection point "elbow" - point at which the curve first begins to straighten out- is considered to represent factors containing more unique rather common variances and thus less suitable for retention.
+
+```{r scree-test}
+scree(data)
 ```
+
+
+**Test 2: Parallel analysis**
+
+The procedure generates a large number of simulated dataset with random values for the same number of variables and sample sizes. Then each of these simulated dataset is then factor analyzed, either with PCA and CFA and the eigenvalues are averaged for each factor across all the dataset. The results is the average eigenvalues for the first, second and so on across the set of simulated dataset. These values are then compared to the eigenvalues extracted for the original data. All factors with eigenvalues above those average eigenvalues are retained.
+
+The parallel analysis is not yet incorporated into the major statistical packages like SPSS.
+
+```{r parallel-analysis}
+fa.parallel(data, fm = "ml")
+```
+
+
+**Kaiser-Guttman Criterion**
+
+The criterion is also known as "eigenvalues greater than 1 rule". Hence, the test suggests how many factors to retain based on eigenvalues greater than 1.
+
+In the code, we predetermined the number of possible factors for exploratory factor analysis. The results recommends 3 factors to retained. The bonding and bridging construct reflect under social capital, the two factors may have been grouped in one resulting only to three recommended factors.
+
+```{r}
+KGC(x = data,
+    eigen_type = c("PCA", "EFA", "SMC"),
+    n_factors = 4)
+```
+
+
+<br>
+
+***
+
+<br>
+
+# 5. Assessing overall fit <a name="assessment"></a>
 
 ## Extracting factor components
 
@@ -229,7 +286,8 @@ The most important tool in interpreting the factor is 'factor rotation'. The ult
 
 Orthogonal rotation are more frequently applied because the analytical procedure for performing oblique rotations are not as well developed and are still subject to some controversy.
 
-### Varimax
+
+**Varimax**
 
 The varimax is the mostly widely used orthogonal rotation method. The criterion centers on simplifying the columns of the factor matrix. It maximizes the sum of variance of required loadings of the factor matrix. Results are some high loadings (i.e., close to -1 or +1) along with some loadings near 0 in each column of the matrix. Closer to -1 or +1 indicating a clear positive or negative associations between variables and factors. Close to 0 indicate a clear lack of association. Varimax rotation often give a clear separation of factors.
 
@@ -246,7 +304,8 @@ efa_varimax <- psych::fa(r = data,
 print(efa_varimax$loadings, cutoff = 0.6)
 ```
 
-### Quartimax
+
+**Quartimax**
 
 Centers on simplifying rows of a factor matrix. Focuses on rotating the initial factors so that a variable loads high on one factor and as low as possible on all other factors. Many variables can load high or near high on the same factors because the technique centers on the simplifying the rows. Quartimax often does not proved successful in producing simpler structures.
 
@@ -261,7 +320,8 @@ efa_quartimax <- fa(r = data,
 print(efa_quartimax$loadings, cutoff = 0.6)
 ```
 
-### Equamax
+
+**Equamax**
 
 A compromise between varimax and quartimax. Rather concentrating on simplification of the rows or on simplification of the column, it tries to accomplish some of each. The equamax has bot gained widespread acceptance and is used infrequently.
 
@@ -274,7 +334,8 @@ efa_equamax <- fa(r = data,
 print(efa_equamax$loadings, cutoff = 0.6)
 ```
 
-## Oblique rotation
+
+**Oblique rotation**
 
 More flexible as this rotation need not to be orthogonal. Allow correlated factors instead of maintaining independence between the rotated factors. More realistic because theoretically important underlying dimension are not assumed to be uncorrelated with each other. Since in reality more or less variables has some degree of association. The promax and oblimin are the widely used rotation under oblique rotation. When statistical softwares were not used, promax provide easier manual computation than oblimin, however the used of computer eliminate this advantage of promax over oblimin. Today, oblimin are used more than promax although both provide quite the same output.
 
@@ -292,7 +353,8 @@ print(efa_promax$loadings, cutoff = 0.6)
 
 ```
 
-### Oblimin
+
+**Oblimin**
 
 ```{r oblimin}
 efa_oblimin <- fa(r = data,
@@ -302,4 +364,19 @@ efa_oblimin <- fa(r = data,
 
 print(efa_oblimin$loadings, cutoff = 0.6)
 ```
+
+
+<br>
+
+***
+
+<br>
+
+
+# 6. Interpreting factors <a name="interpretation"></a>
+
+
+
+
+
 
