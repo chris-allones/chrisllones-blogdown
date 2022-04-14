@@ -3,7 +3,7 @@ bio:
 education:
   courses:
   - course: PhD in Agriculture (candidate)
-    institution: Focus:Agricultural economics and development
+    institution: Focus:Agricultural development and economics
     year: 2019 - present
   - course: BSc in Economics
     institution: Visayas State University
@@ -19,9 +19,9 @@ organizations:
   url: https://www.kmitl.ac.th/
 role: Research Staff
 social:
-- icon: envelope
-  icon_pack: fas
-  link: /#contact
+# - icon: envelope
+#   icon_pack: fas
+#   link: /#contact
 - display:
     header: true
   icon: twitter

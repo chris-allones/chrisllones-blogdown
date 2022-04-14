@@ -10,18 +10,12 @@ main:
   - name: Blog
     url: '#blog'
     weight: 30
-  - name: TidyTuesday
-    url: '#tidytuesday'
-    weight: 50
   - name: Notes
     url: '#notes'
-    weight: 70
+    weight: 50
   - name: Training
     url: '#training'
-    weight: 90
+    weight: 70
   - name: Publication
     url: '#publications'
-    weight: 110
-  - name: Contact
-    url: '#contact'
-    weight: 130
+    weight: 90
