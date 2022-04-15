@@ -1,0 +1,384 @@
+---
+title: "Indoor air pollution as a leading risk factor for premature death."
+authors:
+- admin
+date: 2022-04-14T21:13:14-05:00
+image:
+  caption: "Plot: @Topenomics"
+  focal_point: Smart
+output:
+  html_document:
+    highlight: textmate
+    code_folding: hide
+categories: ["R"]
+subtitle: The data comes from [Our World in Data](https://ourworldindata.org/indoor-air-pollution).
+summary: Burning of  of solid fuel sources, particularly in poor households, results in air pollution that leads to respiratory diseases which can result in premature death. The WHO calls indoor air pollution the world's largest single environmental health risk.
+tags: ["TidyTuesday", "Week 15", "indoor air pollution"]
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<div id="reading-data-and-wrangling" class="section level1">
+<h1>Reading data and wrangling</h1>
+<p>In this week’s #TidyTuesday week 15, the data comes from <a href="https://ourworldindata.org/indoor-air-pollution">Our World in Data</a>. There are four datasets available, but we will focus on access to clean fuels for cooking and indoor air pollution for now.</p>
+<pre class="r"><code># Libraries
+library(tidyverse)
+library(janitor)
+library(ggrepel)
+library(scales)
+library(skimr)
+library(plotly)
+theme_set(theme_light())
+
+# Import TidyTuesday data
+
+tuesdata &lt;- tidytuesdayR::tt_load(2022, week = 15)</code></pre>
+<pre><code>
+    Downloading file 1 of 6: `fuel_gdp.csv`
+    Downloading file 2 of 6: `fuel_access.csv`
+    Downloading file 3 of 6: `death_timeseries.csv`
+    Downloading file 4 of 6: `death_source.csv`
+    Downloading file 5 of 6: `death_fuel.csv`
+    Downloading file 6 of 6: `indoor_pollution.csv`</code></pre>
+<pre class="r"><code>fuel_gdp &lt;- tuesdata$fuel_gdp
+indoor_pollution &lt;- tuesdata$indoor_pollution</code></pre>
+<p>Let’s combine <code>fuel_gdl.csv</code> and the <code>indoor_pollution.csv</code> datasets. Then, using the <code>skim</code> function from the <code>skimr</code> package, we can glimpse some descriptive statistics of our combined dataset.</p>
+<pre class="r"><code>fuel_gdp_clean &lt;- 
+fuel_gdp %&gt;%
+  clean_names() %&gt;%
+  rename(acess_clean_fuel = starts_with(&quot;access_to&quot;),
+         gdp_pc = starts_with(&quot;gdp_per&quot;),
+         pop = starts_with(&quot;population&quot;),
+         country = entity)
+
+indoor_pollution_clean &lt;- 
+indoor_pollution %&gt;% 
+  clean_names() %&gt;% 
+  rename(country = entity, 
+         death = starts_with(&quot;deaths&quot;))
+
+# Combining clean fuel access and death rate
+fuel_indoor_pollution &lt;- 
+fuel_gdp_clean %&gt;% 
+  left_join(indoor_pollution_clean)
+
+fuel_indoor_pollution %&gt;% skim()</code></pre>
+<table>
+<caption><span id="tab:unnamed-chunk-2">Table 1: </span>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td align="left">Name</td>
+<td align="left">Piped data</td>
+</tr>
+<tr class="even">
+<td align="left">Number of rows</td>
+<td align="left">57108</td>
+</tr>
+<tr class="odd">
+<td align="left">Number of columns</td>
+<td align="left">8</td>
+</tr>
+<tr class="even">
+<td align="left">_______________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Column type frequency:</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">character</td>
+<td align="left">3</td>
+</tr>
+<tr class="odd">
+<td align="left">numeric</td>
+<td align="left">5</td>
+</tr>
+<tr class="even">
+<td align="left">________________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Group variables</td>
+<td align="left">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">min</th>
+<th align="right">max</th>
+<th align="right">empty</th>
+<th align="right">n_unique</th>
+<th align="right">whitespace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">country</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">4</td>
+<td align="right">50</td>
+<td align="right">0</td>
+<td align="right">339</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">code</td>
+<td align="right">3009</td>
+<td align="right">0.95</td>
+<td align="right">3</td>
+<td align="right">8</td>
+<td align="right">0</td>
+<td align="right">286</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">continent</td>
+<td align="right">56823</td>
+<td align="right">0.00</td>
+<td align="right">4</td>
+<td align="right">13</td>
+<td align="right">0</td>
+<td align="right">7</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table>
+<colgroup>
+<col width="10%" />
+<col width="6%" />
+<col width="8%" />
+<col width="7%" />
+<col width="8%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="8%" />
+<col width="25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">mean</th>
+<th align="right">sd</th>
+<th align="right">p0</th>
+<th align="right">p25</th>
+<th align="right">p50</th>
+<th align="right">p75</th>
+<th align="right">p100</th>
+<th align="left">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">year</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">1614.09</td>
+<td align="right">1399.91</td>
+<td align="right">-10000.00</td>
+<td align="right">1833.00</td>
+<td align="right">1903.00</td>
+<td align="right">1969.00</td>
+<td align="right">2.021000e+03</td>
+<td align="left">▁▁▁▁▇</td>
+</tr>
+<tr class="even">
+<td align="left">acess_clean_fuel</td>
+<td align="right">53079</td>
+<td align="right">0.07</td>
+<td align="right">59.62</td>
+<td align="right">37.40</td>
+<td align="right">0.15</td>
+<td align="right">19.88</td>
+<td align="right">70.04</td>
+<td align="right">96.40</td>
+<td align="right">1.000000e+02</td>
+<td align="left">▅▂▂▂▇</td>
+</tr>
+<tr class="odd">
+<td align="left">gdp_pc</td>
+<td align="right">49999</td>
+<td align="right">0.12</td>
+<td align="right">16938.11</td>
+<td align="right">19167.65</td>
+<td align="right">1.96</td>
+<td align="right">3560.62</td>
+<td align="right">9948.27</td>
+<td align="right">23194.22</td>
+<td align="right">1.619710e+05</td>
+<td align="left">▇▂▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">pop</td>
+<td align="right">1452</td>
+<td align="right">0.97</td>
+<td align="right">32463522.11</td>
+<td align="right">250302771.63</td>
+<td align="right">1.00</td>
+<td align="right">133874.00</td>
+<td align="right">1218570.50</td>
+<td align="right">5396250.25</td>
+<td align="right">7.874966e+09</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">death</td>
+<td align="right">50748</td>
+<td align="right">0.11</td>
+<td align="right">5.32</td>
+<td align="right">5.72</td>
+<td align="right">0.00</td>
+<td align="right">0.19</td>
+<td align="right">2.72</td>
+<td align="right">10.25</td>
+<td align="right">2.353000e+01</td>
+<td align="left">▇▂▂▁▁</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+</div>
+<div id="what-countries-have-the-highest-number-of-deaths-influenced-by-risks-of-indoor-pollution" class="section level1">
+<h1>What countries have the highest number of deaths influenced by risks of indoor pollution?</h1>
+<p>To answer our question, let’s wangle the data first. Using <code>group_by</code>, we computed the mean death rate for each country from 1990 to 2019. Also, we order the country by the mean death for sorting our bar plot later on.</p>
+<pre class="r"><code># data prep
+indoor_pollution_reordered &lt;- 
+indoor_pollution_clean %&gt;% 
+  group_by(country) %&gt;% 
+  summarise(m_death = mean(death, na.rm = TRUE)) %&gt;% 
+  ungroup() %&gt;% 
+  mutate(m_death = m_death / 100) %&gt;% 
+  mutate(country = fct_reorder(country, m_death))</code></pre>
+<p>The countries like Solomon Islands, Papua New Guinea and Afghanistan are the top 3 countries with the highest share of deaths attributed to indoor air pollution from 1990 to 2019. However, it would be interesting to see if there are any changes since 1990 compared to 2019.</p>
+<pre class="r"><code># Plotting number of deaths by country
+indoor_pollution_reordered %&gt;% 
+  head(30) %&gt;% 
+  ggplot(aes(x = m_death, y = country, fill = m_death)) + 
+  geom_col() +
+  scale_x_continuous(labels = scales::percent_format()) +
+  scale_fill_viridis_c(direction = -1, option = &quot;E&quot;) +
+  theme(plot.margin = margin(rep(15, 4)),
+        plot.title.position = &quot;plot&quot;,
+        plot.subtitle = element_text(margin = margin(b = 15)),
+        legend.position = &quot;none&quot;) + 
+  labs(title = &quot;Share of deaths from indoor pollution across countries, 1990-2019&quot;,
+       subtitle = &quot;Share of deaths, from any cause, attributed to indoor pollution as a risk factor&quot;,
+       x = &quot;% share of death&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><br></p>
+</div>
+<div id="are-there-any-differences-in-the-percent-share-of-death-across-countries-since-1990-versus-2019" class="section level1">
+<h1>Are there any differences in the percent share of death across countries since 1990 versus 2019?</h1>
+<p>In the scatterplot, we can see the comparison of the number of deaths from indoor pollution in 1990 versus the number in the last year 2019. The grey line marks the number of deaths equal in both years. Countries that lie above the line had a higher number of deaths in 2019 than in 1990.</p>
+<pre class="r"><code># data prep
+indoor_pollution_clean_pivot &lt;- 
+indoor_pollution_clean %&gt;% 
+  filter(year == c(1990, 2019)) %&gt;% 
+  mutate(death = death / 100) %&gt;% 
+  pivot_wider(values_from = &quot;death&quot;,
+              names_from = &quot;year&quot;) %&gt;% 
+  rename(year_1990 = `1990`,
+         year_2019 = `2019`) %&gt;% 
+  na.omit()
+
+indoor_pollution_clean_pivot %&gt;% 
+  ggplot(aes(x = year_2019, y = year_1990, color = year_2019)) +
+  geom_abline(intercept = 0, slope = 1, color = &quot;grey40&quot;, lty = &quot;dashed&quot;, size = 0.3) +
+  geom_point(position = position_dodge(width = 0.9), size = 2) +
+  geom_text_repel(aes(label = country)) +
+  scale_color_viridis_c(direction = -1) + 
+  scale_x_continuous(labels = percent_format(), 
+                     limits = c(0, 0.3), 
+                     breaks = seq(0, 0.3, 0.05)) +
+  scale_y_continuous(labels = percent_format(), 
+                     limits = c(0, 0.3), 
+                     breaks = seq(0, 0.3, 0.05)) +
+  theme_minimal() +
+  theme(plot.margin = margin(rep(15, 4)),
+        plot.title.position = &quot;plot&quot;,
+        plot.subtitle = element_text(margin = margin(b = 15)),
+        legend.position = &quot;none&quot;) +
+  labs(title = &quot;Share of deaths from indoor pollution across countries, 1990 vs 2019&quot;,
+       subtitle = &quot;2019 versus 2019 share of deaths, from any cause, attributed to indoor pollution as a risk factor&quot;,
+       x = &quot;% share of death in 1990&quot;,
+       y = &quot;% share of death in 2019&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><br></p>
+</div>
+<div id="indoor-air-pollution-results-from-poor-access-to-clean-fuels" class="section level1">
+<h1>Indoor air pollution results from poor access to clean fuels</h1>
+<p>Household income can be a strong determinant of energy access and types of fuel sources. The bubble plot below shows how access to clean fuels for cooking changes depending on the level of income. This imply that only at higher income levels do households shift from the harmful solid fuels to cleaner non-solid fuels such as ethanol and natural gas. Also, electricity is only available for households at a high income level.</p>
+<p>Low-income household tend to rely on solid fuels for cooking (e.g., crop waste, dung, charcoal, wood, coal) because cleaner fuels are either unavailable or too expensive. We see in the plot a strong link between death rates from indoor pollution and access to clean fuels for cooking.</p>
+<pre class="r"><code># Fonts
+sysfonts::font_add_google(&quot;Anton&quot;, &quot;anton&quot;)
+sysfonts::font_add_google(&quot;Inter&quot;, &quot;inter&quot;)
+showtext::showtext_auto()
+
+
+fuel_indoor_pollution %&gt;% 
+  filter(year == 2016) %&gt;%
+  ggplot(aes(x = death, y = acess_clean_fuel, color = country)) +
+  geom_smooth( lty = &quot;dashed&quot;, se = FALSE, 
+               color = &quot;grey80&quot;, size = 0.7,
+               span = 0.9) +
+  geom_point(position = position_dodge(width = 2), 
+             alpha = 0.3, aes(size = gdp_pc)) +
+  geom_text_repel(aes(label = country)) +
+  scale_y_continuous(limits = c(0, 100),
+                     labels = function(y) paste0(y, &quot;%&quot;)) +
+  scale_x_continuous(limits = c(0, 25),
+                     labels = function(x) paste0(x, &quot;%&quot;)) +
+  scale_size(range = c(0.1, 20)) +
+  coord_cartesian(clip = &quot;off&quot;) +
+  scale_color_viridis_d(option = &quot;H&quot;) +
+  theme(plot.margin = margin(rep(20, 4)),
+        plot.title = element_text(color = &quot;#264653&quot;, 
+                                  family = &quot;anton&quot;, size = 25),
+        plot.subtitle = element_text(margin = margin(b=20), 
+                                     family = &quot;inter&quot;, size = 14,
+                                     color = &quot;#14213d&quot;),
+        plot.title.position = &quot;plot&quot;,
+        plot.caption = element_text(size = 12, 
+                                    color = &quot;#264653&quot;, 
+                                    margin = margin(t = 10)),
+        panel.border = element_blank(),
+        panel.grid = element_blank(),
+        axis.title.x = element_text(margin = margin(t=15), 
+                                    size = 12,
+                                    family = &quot;inter&quot;,
+                                    color = &quot;#14213d&quot;),
+        axis.title.y = element_text(margin = margin(r=15), 
+                                    size = 12,
+                                    family = &quot;inter&quot;,
+                                    color = &quot;#14213d&quot;),
+        legend.position = &quot;none&quot;) +
+  labs(title = &quot;Access to clean fuels for cooking vs indoor air pollution death rates, 2016&quot;,
+       subtitle = &quot;Note: Bubble size represents the GDP per capita.&quot;,
+       y = &quot;Share of population with access to clean fuels for cooking&quot;,
+       x = &quot;Share of indoor pollution death rate&quot;,
+       caption = &quot;Data: Our World in Data | Plot: @Topenomics&quot;) +
+  annotate(geom = &quot;text&quot;, 
+           label = &quot;Countries with the highest death rate from indoor pollution\nhave low access to clean fuels. Also, using GDP per capita, \nlow-income households have lower access to cleaner fuels\nthan high-income households, either unavailable or expensive.&quot;,
+           x = 10, y = 85,
+           hjust = 0,
+           size = 5,
+           family = &quot;inter&quot;,
+           color = &quot;#264653&quot;,
+           alpha = 0.6, 
+           lineheight = 1)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>

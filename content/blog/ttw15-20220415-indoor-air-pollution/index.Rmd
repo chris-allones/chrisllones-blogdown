@@ -1,0 +1,230 @@
+---
+title: "Indoor air pollution as a leading risk factor for premature death."
+authors:
+- admin
+date: 2022-04-14T21:13:14-05:00
+image:
+  caption: "Plot: @Topenomics"
+  focal_point: Smart
+output:
+  html_document:
+    highlight: textmate
+    code_folding: hide
+categories: ["R"]
+subtitle: The data comes from [Our World in Data](https://ourworldindata.org/indoor-air-pollution).
+summary: Burning of  of solid fuel sources, particularly in poor households, results in air pollution that leads to respiratory diseases which can result in premature death. The WHO calls indoor air pollution the world's largest single environmental health risk.
+tags: ["TidyTuesday", "Week 15", "indoor air pollution"]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, comment = "")
+```
+
+
+# Reading data and wrangling
+
+In this week's #TidyTuesday week 15, the data comes from [Our World in Data](https://ourworldindata.org/indoor-air-pollution). There are four datasets available, but we will focus on access to clean fuels for cooking and indoor air pollution for now.
+
+```{r}
+
+# Libraries
+library(tidyverse)
+library(janitor)
+library(ggrepel)
+library(scales)
+library(skimr)
+library(plotly)
+theme_set(theme_light())
+
+# Import TidyTuesday data
+
+tuesdata <- tidytuesdayR::tt_load(2022, week = 15)
+fuel_gdp <- tuesdata$fuel_gdp
+indoor_pollution <- tuesdata$indoor_pollution
+
+```
+
+
+Let's combine `fuel_gdl.csv` and the `indoor_pollution.csv` datasets. Then, using the `skim` function from  the `skimr` package, we can glimpse some descriptive statistics of our combined dataset.
+
+```{r}
+
+fuel_gdp_clean <- 
+fuel_gdp %>%
+  clean_names() %>%
+  rename(acess_clean_fuel = starts_with("access_to"),
+         gdp_pc = starts_with("gdp_per"),
+         pop = starts_with("population"),
+         country = entity)
+
+indoor_pollution_clean <- 
+indoor_pollution %>% 
+  clean_names() %>% 
+  rename(country = entity, 
+         death = starts_with("deaths"))
+
+# Combining clean fuel access and death rate
+fuel_indoor_pollution <- 
+fuel_gdp_clean %>% 
+  left_join(indoor_pollution_clean)
+
+fuel_indoor_pollution %>% skim()
+```
+
+
+<br>
+
+# What countries have the highest number of deaths influenced by risks of indoor pollution?
+
+To answer our question, let's wangle the data first. Using `group_by`, we computed the mean death rate for each country from 1990 to 2019. Also, we order the country by the mean death for sorting our bar plot later on.
+
+```{r}
+# data prep
+indoor_pollution_reordered <- 
+indoor_pollution_clean %>% 
+  group_by(country) %>% 
+  summarise(m_death = mean(death, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  mutate(m_death = m_death / 100) %>% 
+  mutate(country = fct_reorder(country, m_death))
+
+```
+
+
+The countries like Solomon Islands, Papua New Guinea and Afghanistan are the top 3 countries with the highest share of deaths attributed to indoor air pollution from 1990 to 2019. However, it would be interesting to see if there are any changes since 1990 compared to 2019.
+
+```{r}
+
+# Plotting number of deaths by country
+indoor_pollution_reordered %>% 
+  head(30) %>% 
+  ggplot(aes(x = m_death, y = country, fill = m_death)) + 
+  geom_col() +
+  scale_x_continuous(labels = scales::percent_format()) +
+  scale_fill_viridis_c(direction = -1, option = "E") +
+  theme(plot.margin = margin(rep(15, 4)),
+        plot.title.position = "plot",
+        plot.subtitle = element_text(margin = margin(b = 15)),
+        legend.position = "none") + 
+  labs(title = "Share of deaths from indoor pollution across countries, 1990-2019",
+       subtitle = "Share of deaths, from any cause, attributed to indoor pollution as a risk factor",
+       x = "% share of death")
+
+```
+
+
+<br>
+
+# Are there any differences in the percent share of death across countries since 1990 versus 2019?
+
+In the scatterplot, we can see the comparison of the number of deaths from indoor pollution in 1990 versus the number in the last year 2019. The grey line marks the number of deaths equal in both years. Countries that lie above the line had a higher number of deaths in 2019 than in 1990.
+
+```{r}
+# data prep
+indoor_pollution_clean_pivot <- 
+indoor_pollution_clean %>% 
+  filter(year == c(1990, 2019)) %>% 
+  mutate(death = death / 100) %>% 
+  pivot_wider(values_from = "death",
+              names_from = "year") %>% 
+  rename(year_1990 = `1990`,
+         year_2019 = `2019`) %>% 
+  na.omit()
+
+indoor_pollution_clean_pivot %>% 
+  ggplot(aes(x = year_2019, y = year_1990, color = year_2019)) +
+  geom_abline(intercept = 0, slope = 1, color = "grey40", lty = "dashed", size = 0.3) +
+  geom_point(position = position_dodge(width = 0.9), size = 2) +
+  geom_text_repel(aes(label = country)) +
+  scale_color_viridis_c(direction = -1) + 
+  scale_x_continuous(labels = percent_format(), 
+                     limits = c(0, 0.3), 
+                     breaks = seq(0, 0.3, 0.05)) +
+  scale_y_continuous(labels = percent_format(), 
+                     limits = c(0, 0.3), 
+                     breaks = seq(0, 0.3, 0.05)) +
+  theme_minimal() +
+  theme(plot.margin = margin(rep(15, 4)),
+        plot.title.position = "plot",
+        plot.subtitle = element_text(margin = margin(b = 15)),
+        legend.position = "none") +
+  labs(title = "Share of deaths from indoor pollution across countries, 1990 vs 2019",
+       subtitle = "2019 versus 2019 share of deaths, from any cause, attributed to indoor pollution as a risk factor",
+       x = "% share of death in 1990",
+       y = "% share of death in 2019")
+
+```
+
+
+<br>
+
+# Indoor air pollution results from poor access to clean fuels
+
+Household income can be a strong determinant of energy access and types of fuel sources. The bubble plot below shows how access to clean fuels for cooking changes depending on the level of income. This imply that only at higher income levels do households shift from the harmful solid fuels to cleaner non-solid fuels such as ethanol and natural gas. Also, electricity is only available for households at a high income level.
+
+Low-income household tend to rely on solid fuels for cooking (e.g., crop waste, dung, charcoal, wood, coal) because cleaner fuels are either unavailable or too expensive. We see in the plot a strong link between death rates from indoor pollution and access to clean fuels for cooking.
+
+```{r}
+
+# Fonts
+sysfonts::font_add_google("Anton", "anton")
+sysfonts::font_add_google("Inter", "inter")
+showtext::showtext_auto()
+
+
+fuel_indoor_pollution %>% 
+  filter(year == 2016) %>%
+  ggplot(aes(x = death, y = acess_clean_fuel, color = country)) +
+  geom_smooth( lty = "dashed", se = FALSE, 
+               color = "grey80", size = 0.7,
+               span = 0.9) +
+  geom_point(position = position_dodge(width = 2), 
+             alpha = 0.3, aes(size = gdp_pc)) +
+  geom_text_repel(aes(label = country)) +
+  scale_y_continuous(limits = c(0, 100),
+                     labels = function(y) paste0(y, "%")) +
+  scale_x_continuous(limits = c(0, 25),
+                     labels = function(x) paste0(x, "%")) +
+  scale_size(range = c(0.1, 20)) +
+  coord_cartesian(clip = "off") +
+  scale_color_viridis_d(option = "H") +
+  theme(plot.margin = margin(rep(20, 4)),
+        plot.title = element_text(color = "#264653", 
+                                  family = "anton", size = 25),
+        plot.subtitle = element_text(margin = margin(b=20), 
+                                     family = "inter", size = 14,
+                                     color = "#14213d"),
+        plot.title.position = "plot",
+        plot.caption = element_text(size = 12, 
+                                    color = "#264653", 
+                                    margin = margin(t = 10)),
+        panel.border = element_blank(),
+        panel.grid = element_blank(),
+        axis.title.x = element_text(margin = margin(t=15), 
+                                    size = 12,
+                                    family = "inter",
+                                    color = "#14213d"),
+        axis.title.y = element_text(margin = margin(r=15), 
+                                    size = 12,
+                                    family = "inter",
+                                    color = "#14213d"),
+        legend.position = "none") +
+  labs(title = "Access to clean fuels for cooking vs indoor air pollution death rates, 2016",
+       subtitle = "Note: Bubble size represents the GDP per capita.",
+       y = "Share of population with access to clean fuels for cooking",
+       x = "Share of indoor pollution death rate",
+       caption = "Data: Our World in Data | Plot: @Topenomics") +
+  annotate(geom = "text", 
+           label = "Countries with the highest death rate from indoor pollution\nhave low access to clean fuels. Also, using GDP per capita, \nlow-income households have lower access to cleaner fuels\nthan high-income households, either unavailable or expensive.",
+           x = 10, y = 85,
+           hjust = 0,
+           size = 5,
+           family = "inter",
+           color = "#264653",
+           alpha = 0.6, 
+           lineheight = 1)
+
+```
+
+
+
