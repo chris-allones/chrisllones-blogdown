@@ -7,7 +7,7 @@ output:
   html_document:
     highlight: textmate
 categories: ["R"]
-subtitle: Adopted from Handbook of Univariate and Multivariate Data Analysis with IBM SPSS by Robert Ho.
+subtitle: ""
 summary: The independent *t* test is used for testing the difference between means of two independent groups. It is particularly useful when the research question requires the comparison of variables (measured at least at the ordinal level) obtained from two independent samples.
 tags: ["t-test", "parametric", "compare means"]
 ---
@@ -119,4 +119,52 @@ sample estimates:
 <pre class="r"><code>ind_ttest$statistic^2 / (ind_ttest$statistic^2 + ind_ttest$parameter)</code></pre>
 <pre><code>        t 
 0.3368622 </code></pre>
+<p><br></p>
+</div>
+<div id="manual-computation" class="section level1">
+<h1>Manual computation</h1>
+<p>The t statistic for the t test for independent sample is given by:</p>
+<p><span class="math display">\[
+t = \frac{\bar{X_1} - \bar{X_2}}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_1}}}
+\]</span></p>
+<p>where <span class="math inline">\(\bar{X}\)</span> is the mean value for each group, <span class="math inline">\(S^2\)</span> is the sample variance, and <span class="math inline">\(n\)</span> number of observation in each group.</p>
+<pre class="r"><code># X1 - mean words recalled by male
+mean_male &lt;- 
+memory_ability %&gt;% filter(gender == &quot;Male&quot;) %&gt;% summarise(m_words = mean(words)) %&gt;% pull()
+
+# X2 - mean words recalled by female
+mean_female &lt;- 
+memory_ability %&gt;% filter(gender == &quot;Female&quot;) %&gt;% summarise(m_words = mean(words)) %&gt;% pull()
+
+# s1 - variance of words recalled by male
+variance_male &lt;- 
+memory_ability %&gt;% filter(gender == &quot;Male&quot;) %&gt;% summarise(m_words = var(words)) %&gt;% pull()
+
+# s2 - variance of words recalled by female
+variance_female &lt;- 
+memory_ability %&gt;% filter(gender == &quot;Female&quot;) %&gt;% summarise(m_words = var(words)) %&gt;% pull()
+
+# no of male
+n_male &lt;- 
+memory_ability %&gt;% filter(gender == &quot;Male&quot;) %&gt;% count() %&gt;% pull()
+
+# no of female
+n_female &lt;- 
+memory_ability %&gt;% filter(gender == &quot;Female&quot;) %&gt;% count() %&gt;% pull()</code></pre>
+<pre class="r"><code># Computing the t statistic
+t_stat &lt;- 
+(mean_male - mean_female) / sqrt((variance_male/n_male) + (variance_female/ n_female))
+
+t_stat</code></pre>
+<pre><code>[1] -3.02035</code></pre>
+<pre class="r"><code># Deriving the two-tailed p-value
+pt(q = t_stat, df = 18) * 2</code></pre>
+<pre><code>[1] 0.007352521</code></pre>
+<p><br></p>
+<hr />
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Ho, Robert (2014).Handbook of Univariate and Multivariate Data Analysis with IBM SPSS (2nd edition). Chapman &amp; Hall/CRC, Taylor &amp; Francis Group.</p>
+<p>Sheskin, David J. (2011). Handbook of Parametric and Nonparametric Statistical Procedures (5th edition). Chapman &amp; Hall/CRC, Taylor &amp; Francis Group.</p>
+</div>
 </div>

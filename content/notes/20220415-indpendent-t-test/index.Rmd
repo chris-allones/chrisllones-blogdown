@@ -7,7 +7,7 @@ output:
   html_document:
     highlight: textmate
 categories: ["R"]
-subtitle: Adopted from Handbook of Univariate and Multivariate Data Analysis with IBM SPSS by Robert Ho.
+subtitle: ""
 summary: The independent *t* test is used for testing the difference between means of two independent groups. It is particularly useful when the research question requires the comparison of variables (measured at least at the ordinal level) obtained from two independent samples.
 tags: ["t-test", "parametric", "compare means"]
 ---
@@ -139,5 +139,64 @@ $$\eta^2 = \frac{t^2}{t^2 + df}$$
 ind_ttest$statistic^2 / (ind_ttest$statistic^2 + ind_ttest$parameter)
 ```
 
+<br>
+
+# Manual computation
+
+The t statistic for the t test for independent sample is given by:
+
+$$
+t = \frac{\bar{X_1} - \bar{X_2}}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_1}}}
+$$
+
+where $\bar{X}$ is the mean value for each group, $S^2$ is the sample variance, and $n$ number of observation in each group.
+
+```{r}
+# X1 - mean words recalled by male
+mean_male <- 
+memory_ability %>% filter(gender == "Male") %>% summarise(m_words = mean(words)) %>% pull()
+
+# X2 - mean words recalled by female
+mean_female <- 
+memory_ability %>% filter(gender == "Female") %>% summarise(m_words = mean(words)) %>% pull()
+
+# s1 - variance of words recalled by male
+variance_male <- 
+memory_ability %>% filter(gender == "Male") %>% summarise(m_words = var(words)) %>% pull()
+
+# s2 - variance of words recalled by female
+variance_female <- 
+memory_ability %>% filter(gender == "Female") %>% summarise(m_words = var(words)) %>% pull()
+
+# no of male
+n_male <- 
+memory_ability %>% filter(gender == "Male") %>% count() %>% pull()
+
+# no of female
+n_female <- 
+memory_ability %>% filter(gender == "Female") %>% count() %>% pull()
+```
+
+```{r}
+# Computing the t statistic
+t_stat <- 
+(mean_male - mean_female) / sqrt((variance_male/n_male) + (variance_female/ n_female))
+
+t_stat
+
+# Deriving the two-tailed p-value
+pt(q = t_stat, df = 18) * 2
+```
+
+
+<br>
+
+***
+
+## References
+
+Ho, Robert (2014).Handbook of Univariate and Multivariate Data Analysis with IBM SPSS (2nd edition). Chapman & Hall/CRC, Taylor & Francis Group.
+
+Sheskin, David J. (2011). Handbook of Parametric and Nonparametric Statistical Procedures (5th edition). Chapman & Hall/CRC, Taylor & Francis Group.
 
 
