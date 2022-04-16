@@ -1,5 +1,5 @@
 ---
-title: 'TidyTueday week 5: dog breeds'
+title: 'Exploring dog breeds'
 authors:
 - admin
 date: 2022-02-01T21:13:14-05:00
@@ -11,7 +11,7 @@ output:
     highlight: textmate
     code_folding: hide
 categories: ["R"]
-subtitle: Most popular dog breeds
+subtitle: The data comes from the American Club courtesy of [KKakey](https://github.com/kkakey/dog_traits_AKC/blob/main/README.md).
 summary: In TidyTuesday Week 5, we will be making a bump chart on the top 10 most popular dog breed and level of openness to strangers. The data is from AKC registration statistics courtesy of KKakey.
 tags: ["TidyTuesday", "Week 5", "dog breed"]
 ---
@@ -52,6 +52,8 @@ breed_rank_all %>%
 
 ```
 
+<br>
+
 # Explore data
 
 Looking at the `breed_traits` data, we can format the dataset in a long format where all traits are in one column and ratings in another. Also, we can rename the traits in a one-word description for easy navigation of different traits rated.
@@ -85,6 +87,7 @@ traits
 
 ```
 
+<br>
 
 ## What is the averall average traits rating across different dog breeds?
 
@@ -113,6 +116,7 @@ traits %>%
 ```
 
 
+<br>
 
 ## What are the top dog breeds across years
 
@@ -153,7 +157,7 @@ breed_top_10 %>%
 ggplotly(gg_top_breed)
 ```
 
-
+<br>
 
 # Final plot
 

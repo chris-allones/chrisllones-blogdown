@@ -100,7 +100,20 @@ group  1  0.0869 0.7715
 <p>The result from the <em>t</em> test indicate that there is a significant differenc between the male and female samples in the number of words correctly recalled, <em>t(df=18)=-3.02, p&lt;0.01</em>. The mean values indicate that females correctly recalled significantly more words (M=22.10) than males(M=17.70).</p>
 <p>The confidence interval information shows that the null hypothesis value (i.e., zero) does not fall within the interval. Therefore the null hypothesis of equality of means can be rejected.</p>
 <pre class="r"><code>ind_ttest &lt;- 
-t.test(words ~ gender, data = memory_ability, alternative = &quot;two.sided&quot;)</code></pre>
+t.test(words ~ gender, data = memory_ability, alternative = &quot;two.sided&quot;)
+
+ind_ttest</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  words by gender
+t = -3.0203, df = 17.958, p-value = 0.007367
+alternative hypothesis: true difference in means between group Male and group Female is not equal to 0
+95 percent confidence interval:
+ -7.461101 -1.338899
+sample estimates:
+  mean in group Male mean in group Female 
+                17.7                 22.1 </code></pre>
 <p>We can also compute for the eta-square (<span class="math inline">\(\eta^2\)</span>) which can be interpreted in exactly the same as <span class="math inline">\(R^2\)</span> in correlation and regression. That is, approximately 33.63% of the variability in the number of words correctly recalled was explained by the gender manipulation. Eta-square can be calculated by:</p>
 <p><span class="math display">\[\eta^2 = \frac{t^2}{t^2 + df}\]</span></p>
 <pre class="r"><code>ind_ttest$statistic^2 / (ind_ttest$statistic^2 + ind_ttest$parameter)</code></pre>

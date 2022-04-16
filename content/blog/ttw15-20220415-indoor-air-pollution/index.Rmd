@@ -6,6 +6,7 @@ date: 2022-04-14T21:13:14-05:00
 image:
   caption: "Plot: @Topenomics"
   focal_point: Smart
+  placement: 2
 output:
   html_document:
     highlight: textmate

@@ -1,5 +1,5 @@
 ---
-title: "TidyTuesday week 4: boardgames"
+title: "Top rated boardgames"
 authors:
 - admin
 date: 2022-01-25T21:13:14-05:00
@@ -12,7 +12,7 @@ output:
     code_folding: hide
 categories: ["R"]
 subtitle: Top rated boardgame publishers (1900-2021)
-summary: In TidyTuesday Week 4, I made a lollipop plot to show the top rated boardgame publishers (1900-2021)
+summary: In TidyTuesday Week 4, I made a lollipop plot to show the top rated boardgame publishers (1900-2021).
 tags: ["TidyTuesday", "Week 4", "game board"]
 ---
 
@@ -36,13 +36,13 @@ library(janitor)
 
 
 # Accessing data using tidytuesday package
-# tuesdata <- tidytuesdayR::tt_load('2022-01-25')
-# details <- tuesdata$details
-# ratings <- tuesdata$ratings
+tuesdata <- tidytuesdayR::tt_load('2022-01-25')
+details <- tuesdata$details
+ratings <- tuesdata$ratings
 
 
 # Downloaded data due to limited Github request
-setwd("D:/OneDrive - KMITL/Documents/Github-pages/chrisllones-blogdown/content/tidytuesday/w4-20220125-gameboard")
+# setwd("D:/OneDrive - KMITL/Documents/Github-pages/chrisllones-blogdown/content/tidytuesday/w4-20220125-gameboard")
 ratings <- readr::read_csv("data/ratings.csv")
 details <- readr::read_csv("data/details.csv")
 

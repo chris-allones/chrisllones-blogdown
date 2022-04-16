@@ -1,5 +1,5 @@
 ---
-title: "TidyTuesday week 4: boardgames"
+title: "Top rated boardgames"
 authors:
 - admin
 date: 2022-01-25T21:13:14-05:00
@@ -12,7 +12,7 @@ output:
     code_folding: hide
 categories: ["R"]
 subtitle: Top rated boardgame publishers (1900-2021)
-summary: In TidyTuesday Week 4, I made a lollipop plot to show the top rated boardgame publishers (1900-2021)
+summary: In TidyTuesday Week 4, I made a lollipop plot to show the top rated boardgame publishers (1900-2021).
 tags: ["TidyTuesday", "Week 4", "game board"]
 ---
 
@@ -27,13 +27,16 @@ tags: ["TidyTuesday", "Week 4", "game board"]
 
 
 # Accessing data using tidytuesday package
-# tuesdata &lt;- tidytuesdayR::tt_load(&#39;2022-01-25&#39;)
-# details &lt;- tuesdata$details
-# ratings &lt;- tuesdata$ratings
+tuesdata &lt;- tidytuesdayR::tt_load(&#39;2022-01-25&#39;)</code></pre>
+<pre><code>
+    Downloading file 1 of 2: `details.csv`
+    Downloading file 2 of 2: `ratings.csv`</code></pre>
+<pre class="r"><code>details &lt;- tuesdata$details
+ratings &lt;- tuesdata$ratings
 
 
 # Downloaded data due to limited Github request
-setwd(&quot;D:/OneDrive - KMITL/Documents/Github-pages/chrisllones-blogdown/content/tidytuesday/w4-20220125-gameboard&quot;)
+# setwd(&quot;D:/OneDrive - KMITL/Documents/Github-pages/chrisllones-blogdown/content/tidytuesday/w4-20220125-gameboard&quot;)
 ratings &lt;- readr::read_csv(&quot;data/ratings.csv&quot;)
 details &lt;- readr::read_csv(&quot;data/details.csv&quot;)
 

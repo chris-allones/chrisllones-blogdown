@@ -127,6 +127,8 @@ The confidence interval information shows that the null hypothesis value (i.e., 
 ind_ttest <- 
 t.test(words ~ gender, data = memory_ability, alternative = "two.sided")
 
+ind_ttest
+
 ```
 
 We can also compute for the eta-square ($\eta^2$) which can be interpreted in exactly the same as $R^2$ in correlation and regression. That is, approximately 33.63% of the variability in the number of words correctly recalled was explained by the gender manipulation. Eta-square can be calculated by:
