@@ -10,8 +10,8 @@ main:
   - name: Blog
     url: '#blog'
     weight: 30
-  - name: Notes
-    url: '#notes'
+  - name: RStats
+    url: '#rstats'
     weight: 50
   - name: Training
     url: '#training'

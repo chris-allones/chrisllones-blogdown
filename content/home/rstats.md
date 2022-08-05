@@ -9,14 +9,14 @@ headless: true
 # Order that this section appears on the page.
 weight: 70
 
-title: Notes
+title: Rstats
 subtitle:
 
 content:
   # Filter on criteria
   filters:
     folders:
-      - notes
+      - rstats
     tag: ''
     category: ''
     publication_type: ''
