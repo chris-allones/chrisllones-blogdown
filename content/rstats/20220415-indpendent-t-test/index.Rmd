@@ -1,5 +1,5 @@
 ---
-title: "Independent t-test"
+title: "Independent sample t-test"
 authors:
 - admin
 date: 2022-04-14T21:13:14-05:00
@@ -15,6 +15,8 @@ tags: ["t-test", "parametric", "compare means"]
 knitr::opts_chunk$set(echo = TRUE, fig.align = "center", comment = "")
 
 library(tidyverse)
+library(ggstatsplot)
+library(patchwork)
 library(haven)
 ```
 
@@ -52,7 +54,24 @@ memory_ability %>%
      annotate(geom = "text", label = "Mean no of words \nrecalled: 22.1",
               x = 22.3, y = 0.13, hjust = 0, size = 3.5, color = "cyan4")
 
+parametric <- memory_ability %>% 
+  ggbetweenstats(x = gender, y = words,
+                 type = "parametric") +
+  labs(title = "Parametric test")
+
+nonparametric <- memory_ability %>% 
+  ggbetweenstats(x = gender, y = words,
+                 type = "nonparametric") +
+  labs(title = "Nonparametric test")
+
+para_nonpara <- parametric | nonparametric
+ggsave(plot = para_nonpara, filename = "featured1.jpg")
+
 ```
+
+<br>
+
+<img src="/notes/20220415-indpendent-t-test/20220416-t-tests_files/para_non_parametric_tests.jpg"/>
 
 <br>
 

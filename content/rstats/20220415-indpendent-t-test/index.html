@@ -1,5 +1,5 @@
 ---
-title: "Independent t-test"
+title: "Independent sample t-test"
 authors:
 - admin
 date: 2022-04-14T21:13:14-05:00
@@ -12,9 +12,10 @@ summary: The independent *t* test is used for testing the difference between mea
 tags: ["t-test", "parametric", "compare means"]
 ---
 
-<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
 
 
+<p><br></p>
+<p><img src="/notes/20220415-indpendent-t-test/20220416-t-tests_files/para_non_parametric_tests.jpg"/></p>
 <p><br></p>
 <div id="aim" class="section level1">
 <h1>Aim</h1>
@@ -33,7 +34,7 @@ tags: ["t-test", "parametric", "compare means"]
 <div id="data" class="section level1">
 <h1>Data</h1>
 <pre class="r"><code>skimr::skim_tee(memory_ability)</code></pre>
-<pre><code>-- Data Summary ------------------------
+<pre><code>── Data Summary ────────────────────────
                            Values
 Name                       data  
 Number of rows             20    
@@ -45,20 +46,13 @@ Column type frequency:
 ________________________         
 Group variables            None  
 
--- Variable type: factor -------------------------------------------------------
-# A tibble: 1 x 6
+── Variable type: factor ───────────────────────────────────────────────────────
   skim_variable n_missing complete_rate ordered n_unique top_counts      
-* &lt;chr&gt;             &lt;int&gt;         &lt;dbl&gt; &lt;lgl&gt;      &lt;int&gt; &lt;chr&gt;           
 1 gender                0             1 FALSE          2 Mal: 10, Fem: 10
 
--- Variable type: numeric ------------------------------------------------------
-# A tibble: 1 x 11
-  skim_variable n_missing complete_rate  mean    sd    p0   p25   p50   p75
-* &lt;chr&gt;             &lt;int&gt;         &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 words                 0             1  19.9  3.89    14    17  19.5  23.2
-   p100 hist 
-* &lt;dbl&gt; &lt;chr&gt;
-1    26 &lt;U+2586&gt;&lt;U+2587&gt;&lt;U+2586&gt;&lt;U+2583&gt;&lt;U+2587&gt;</code></pre>
+── Variable type: numeric ──────────────────────────────────────────────────────
+  skim_variable n_missing complete_rate mean   sd p0 p25  p50  p75 p100 hist 
+1 words                 0             1 19.9 3.89 14  17 19.5 23.2   26 ▆▇▆▃▇</code></pre>
 <p><br></p>
 </div>
 <div id="testing-assumptions" class="section level1">
