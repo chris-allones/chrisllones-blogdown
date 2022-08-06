@@ -12,60 +12,7 @@ summary: The independent *t* test is used for testing the difference between mea
 tags: ["t-test", "parametric", "compare means"]
 ---
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.align = "center", comment = "")
-
-library(tidyverse)
-library(ggstatsplot)
-library(patchwork)
-library(haven)
-```
-
-```{r echo=FALSE}
-# Loading data
-memory_ability <- 
-read_sav("https://raw.githubusercontent.com/chris-allones/Research-methods/master/t-test/data/EX4.sav") %>% 
-     mutate(gender = as.character(gender),
-            gender = factor(gender, levels = 1:2, labels = c("Male", "Female")))
-
-mean_words_male <- 
-memory_ability %>% 
-     filter(gender == "Male") %>% 
-     summarise(mean_word = mean(words)) %>% 
-     pull()
-
-mean_words_female <- 
-memory_ability %>% 
-     filter(gender == "Female") %>% 
-     summarise(mean_word = mean(words)) %>% 
-     pull()
-
-```
-
-```{r include=FALSE}
-memory_ability %>% 
-     ggplot(aes(x = words, fill = gender,color = gender)) +
-     geom_density(alpha = 0.3, size = 0.8) +
-     geom_vline(xintercept = mean_words_male, lty = "dashed", color = "red") +
-     geom_vline(xintercept = mean_words_female, lty = "dashed", color = "cyan4") +
-     scale_x_continuous(limits = c(10, 35)) +
-     theme(legend.position = "top") +
-     annotate(geom = "text", label = "Mean no of words \nrecalled: 17.7",
-              x = 18, y = 0.145, hjust = 0, size = 3.5, color = "red") +
-     annotate(geom = "text", label = "Mean no of words \nrecalled: 22.1",
-              x = 22.3, y = 0.13, hjust = 0, size = 3.5, color = "cyan4")
-
-parametric <- memory_ability %>% 
-  ggbetweenstats(x = gender, y = words,
-                 type = "parametric") +
-  labs(title = "Parametric test")
-
-nonparametric <- memory_ability %>% 
-  ggbetweenstats(x = gender, y = words,
-                 type = "nonparametric") +
-  labs(title = "Nonparametric test")
-
-para_nonpara <- parametric | nonparametric
-ggsave(plot = para_nonpara, filename = "featured1.jpg")
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", comment = "", message = FALSE, warning = FALSE)
 
 ```
 
@@ -93,9 +40,34 @@ The independent *t* test is used for testing the difference between means of two
 
 # Data
 
+We will use a hypothetical dataset about students' memory abilities as our sample exercise data. The students were asked to read unrelated words and later were asked to recall as many words as possible. The number of words correctly recalled for each student is shown below. You can access the dataset using this [link]("https://raw.githubusercontent.com/chris-allones/Research-methods/master/t-test/data/EX4.sav")
+
 ```{r}
-skimr::skim_tee(memory_ability)
+# loading the required packages
+library(tidyverse)
+library(haven) # reading .sav (SPSS) data file
+library(ggstatsplot) # creating plots for different stat test
+library(patchwork) # for combining plots
+library(dlookr) # for normality test
+
+# Loading data
+memory_ability <- 
+  read_sav("https://raw.githubusercontent.com/chris-allones/Research-methods/master/t-test/data/EX4.sav") %>% 
+  mutate(gender = as.character(gender),
+         gender = factor(gender, levels = 1:2, labels = c("Male", "Female")))
+
+# printing dataset
+rmarkdown::paged_table(memory_ability, option = list(rows.print = 5))
+
 ```
+
+```{r}
+# summary
+# use psych package for a quick descriptive statistics
+psych::describe(memory_ability)
+
+```
+
 
 <br>
 
@@ -116,11 +88,19 @@ qqnorm(memory_ability$words)
 qqline(memory_ability$words)
 ```
 
-Whereas the Shapiro-Wilk statistic tests for normality. If the significance level are greater than 0.05, then normality is assumed. The Shapiro-Wilk test is recommended when sample size is small (~ <50). Result of the Shapiro-Wilk test below, the computed significance level is 0.201, implying normality can be assumed.
+Often the visual inspection is hard to see the pattern if the data follows a normal distribution. Therefore, we can use the Shapiro-Wilk test for normality. If the significance level is greater than 0.05, then normality is assumed. The Shapiro-Wilk test is recommended when the sample size is small (~ <50).
+
+We will test the distribution of the number of recalled words for each group (i.e., male and female). Then, we will use the function `group_by()` to perform the normality test for each `gender` separately. The result of the Shapiro-Wilk test shows that the computed significance level is greater than 0.05, implying normality can be assumed.
+
 
 ```{r}
-shapiro.test(memory_ability$words)
+# normality test using the dlookr package
+memory_ability %>% 
+  group_by(gender) %>% 
+  normality(words)
+
 ```
+
 
 <br>
 
@@ -128,7 +108,9 @@ shapiro.test(memory_ability$words)
 
 The Levene's test can be used to check the assumption on the homogeneity of variance. The Levene's tes for equality of variance tests the hypothesis that the two population variances are equal. 
 
-The results below shows that the Levene statistic is *F=0.087* and the corresponding level of significance is large (i.e., *p>0.05*). Hence, the assumption of homogeneity of variance has not been violated, and the equal variances assumed implying *t* test statistic can be used for evaluating the null hypothesis of equality of means.
+Why do we need to test for the equality of variance? The answer is that even though there is a large difference in the mean value between groups but with a huge variance (i.e., nonhomogenous variance), the difference may not be significant. On the other hand, a small difference in the mean value may be significant when the variance is small (i.e., homogenous variance).
+
+The results below shows that the Levene statistic is $F=0.087$ and the corresponding level of significance is large (i.e., $p>0.05$). Hence, the assumption of homogeneity of variance has not been violated, and the equal variances assumed implying *t* test statistic can be used for evaluating the null hypothesis of equality of means.
 
 ```{r}
 car::leveneTest(words ~ gender, data = memory_ability, center = "mean")
@@ -138,17 +120,32 @@ car::leveneTest(words ~ gender, data = memory_ability, center = "mean")
 
 # Results and interpretation
 
-The result from the *t* test indicate that there is a significant differenc between the male and female samples in the number of words correctly recalled, *t(df=18)=-3.02, p<0.01*. The mean values indicate that females correctly recalled significantly more words (M=22.10) than males(M=17.70).
+The result from the $t$ test indicate that there is a significant difference between the male and female samples in the number of words correctly recalled, $t(df=18)=-3.02, p<0.01$. The mean values indicate that females correctly recalled significantly more words (M=22.10) than males(M=17.70).
 
 The confidence interval information shows that the null hypothesis value (i.e., zero) does not fall within the interval. Therefore the null hypothesis of equality of means can be rejected.
 
 ```{r}
+
 ind_ttest <- 
 t.test(words ~ gender, data = memory_ability, alternative = "two.sided")
 
 ind_ttest
 
 ```
+
+```{r}
+ggbetweenstats(
+  data = memory_ability,
+  x = gender,
+  y = words,
+  type = "parametric",
+  var.equal = TRUE # homogenous variance from Leven's test
+) + 
+  theme(text = element_text(size = 24)) # increase text size
+
+
+```
+
 
 We can also compute for the eta-square ($\eta^2$) which can be interpreted in exactly the same as $R^2$ in correlation and regression. That is, approximately 33.63% of the variability in the number of words correctly recalled was explained by the gender manipulation. Eta-square can be calculated by:
 
@@ -159,6 +156,7 @@ ind_ttest$statistic^2 / (ind_ttest$statistic^2 + ind_ttest$parameter)
 ```
 
 <br>
+
 
 # Manual computation
 
