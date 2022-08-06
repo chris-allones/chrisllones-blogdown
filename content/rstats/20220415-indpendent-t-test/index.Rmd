@@ -49,12 +49,14 @@ library(haven) # reading .sav (SPSS) data file
 library(ggstatsplot) # creating plots for different stat test
 library(patchwork) # for combining plots
 library(dlookr) # for normality test
+library(qqplotr) # add functions to ggplot to for qqplot
 
 # Loading data
 memory_ability <- 
   read_sav("https://raw.githubusercontent.com/chris-allones/Research-methods/master/t-test/data/EX4.sav") %>% 
   mutate(gender = as.character(gender),
-         gender = factor(gender, levels = 1:2, labels = c("Male", "Female")))
+         gender = factor(gender, levels = 1:2, labels = c("Male", "Female")),
+         gender = fct_rev(gender))
 
 # printing dataset
 rmarkdown::paged_table(memory_ability, option = list(rows.print = 5))
@@ -84,9 +86,27 @@ During data collection, ensure that the observation in one group are independent
 For a start, a qqplot or the "quantile-quantile" plot can be used to quickly assess whether or not the data or a variable follows a normal distribution. If normally distributed, the data points will lie on the straight diagonal line. For the qqplot below, most of the points lie on the diagonal line but with some deviations along each of the tails. 
 
 ```{r}
-qqnorm(memory_ability$words)
-qqline(memory_ability$words)
+# qqplot using the base R function
+par(mfrow = c(1, 2))
+qqnorm(memory_ability[memory_ability$gender == "Female", ]$words, main = "Normal Q-Q Plot: Female Students")
+qqline(memory_ability[memory_ability$gender == "Female", ]$words)
+
+qqnorm(memory_ability[memory_ability$gender == "Male", ]$words, main = "Normal Q-Q Plot: Male Students")
+qqline(memory_ability[memory_ability$gender == "Male", ]$words)
+
 ```
+
+```{r}
+# qqplot using ggplot
+ggplot(data = memory_ability, mapping = aes(sample = words, color = gender, fill = gender)) +
+  stat_qq_band(alpha=0.5, conf=0.95, qtype=1, bandType = "ts") +
+  stat_qq_line(identity=TRUE) +
+  stat_qq_point(col="black") +
+  facet_wrap(~ gender, ncol = 2) +
+  theme(text = element_text(size = 18))
+
+```
+
 
 Often the visual inspection is hard to see the pattern if the data follows a normal distribution. Therefore, we can use the Shapiro-Wilk test for normality. If the significance level is greater than 0.05, then normality is assumed. The Shapiro-Wilk test is recommended when the sample size is small (~ <50).
 

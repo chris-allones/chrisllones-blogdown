@@ -42,12 +42,14 @@ library(haven) # reading .sav (SPSS) data file
 library(ggstatsplot) # creating plots for different stat test
 library(patchwork) # for combining plots
 library(dlookr) # for normality test
+library(qqplotr) # add functions to ggplot to for qqplot
 
 # Loading data
 memory_ability &lt;- 
   read_sav(&quot;https://raw.githubusercontent.com/chris-allones/Research-methods/master/t-test/data/EX4.sav&quot;) %&gt;% 
   mutate(gender = as.character(gender),
-         gender = factor(gender, levels = 1:2, labels = c(&quot;Male&quot;, &quot;Female&quot;)))
+         gender = factor(gender, levels = 1:2, labels = c(&quot;Male&quot;, &quot;Female&quot;)),
+         gender = fct_rev(gender))
 
 # printing dataset
 rmarkdown::paged_table(memory_ability, option = list(rows.print = 5))</code></pre>
@@ -74,9 +76,22 @@ words      2 20 19.9 3.89   19.5   19.88 5.19  14  26    12 0.14     -1.4 0.87</
 <div id="normality-test" class="section level2">
 <h2>Normality test</h2>
 <p>For a start, a qqplot or the “quantile-quantile” plot can be used to quickly assess whether or not the data or a variable follows a normal distribution. If normally distributed, the data points will lie on the straight diagonal line. For the qqplot below, most of the points lie on the diagonal line but with some deviations along each of the tails.</p>
-<pre class="r"><code>qqnorm(memory_ability$words)
-qqline(memory_ability$words)</code></pre>
+<pre class="r"><code># qqplot using the base R function
+par(mfrow = c(1, 2))
+qqnorm(memory_ability[memory_ability$gender == &quot;Female&quot;, ]$words, main = &quot;Normal Q-Q Plot: Female Students&quot;)
+qqline(memory_ability[memory_ability$gender == &quot;Female&quot;, ]$words)
+
+qqnorm(memory_ability[memory_ability$gender == &quot;Male&quot;, ]$words, main = &quot;Normal Q-Q Plot: Male Students&quot;)
+qqline(memory_ability[memory_ability$gender == &quot;Male&quot;, ]$words)</code></pre>
 <p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># qqplot using ggplot
+ggplot(data = memory_ability, mapping = aes(sample = words, color = gender, fill = gender)) +
+  stat_qq_band(alpha=0.5, conf=0.95, qtype=1, bandType = &quot;ts&quot;) +
+  stat_qq_line(identity=TRUE) +
+  stat_qq_point(col=&quot;black&quot;) +
+  facet_wrap(~ gender, ncol = 2) +
+  theme(text = element_text(size = 18))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Often the visual inspection is hard to see the pattern if the data follows a normal distribution. Therefore, we can use the Shapiro-Wilk test for normality. If the significance level is greater than 0.05, then normality is assumed. The Shapiro-Wilk test is recommended when the sample size is small (~ &lt;50).</p>
 <p>We will test the distribution of the number of recalled words for each group (i.e., male and female). Then, we will use the function <code>group_by()</code> to perform the normality test for each <code>gender</code> separately. The result of the Shapiro-Wilk test shows that the computed significance level is greater than 0.05, implying normality can be assumed.</p>
 <pre class="r"><code># normality test using the dlookr package
@@ -86,8 +101,8 @@ memory_ability %&gt;%
 <pre><code># A tibble: 2 × 5
   variable gender statistic p_value sample
   &lt;chr&gt;    &lt;fct&gt;      &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
-1 words    Male       0.902   0.231     10
-2 words    Female     0.920   0.355     10</code></pre>
+1 words    Female     0.920   0.355     10
+2 words    Male       0.902   0.231     10</code></pre>
 <p><br></p>
 </div>
 <div id="homogeneity-of-variance" class="section level2">
@@ -115,13 +130,13 @@ ind_ttest</code></pre>
     Welch Two Sample t-test
 
 data:  words by gender
-t = -3.0203, df = 17.958, p-value = 0.007367
-alternative hypothesis: true difference in means between group Male and group Female is not equal to 0
+t = 3.0203, df = 17.958, p-value = 0.007367
+alternative hypothesis: true difference in means between group Female and group Male is not equal to 0
 95 percent confidence interval:
- -7.461101 -1.338899
+ 1.338899 7.461101
 sample estimates:
-  mean in group Male mean in group Female 
-                17.7                 22.1 </code></pre>
+mean in group Female   mean in group Male 
+                22.1                 17.7 </code></pre>
 <pre class="r"><code>ggbetweenstats(
   data = memory_ability,
   x = gender,
@@ -130,7 +145,7 @@ sample estimates:
   var.equal = TRUE # homogenous variance from Leven&#39;s test
 ) + 
   theme(text = element_text(size = 24)) # increase text size</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>We can also compute for the eta-square (<span class="math inline">\(\eta^2\)</span>) which can be interpreted in exactly the same as <span class="math inline">\(R^2\)</span> in correlation and regression. That is, approximately 33.63% of the variability in the number of words correctly recalled was explained by the gender manipulation. Eta-square can be calculated by:</p>
 <p><span class="math display">\[\eta^2 = \frac{t^2}{t^2 + df}\]</span></p>
 <pre class="r"><code>ind_ttest$statistic^2 / (ind_ttest$statistic^2 + ind_ttest$parameter)</code></pre>
